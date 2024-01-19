@@ -2,12 +2,12 @@
 
 namespace SharedKernel.Dal.Internal;
 
-internal sealed class PostgresUnitOfWork<TContext> : IUnitOfWork
+internal sealed class SqlUnitOfWork<TContext> : IUnitOfWork
     where TContext : DbContext
 {
     private readonly TContext _dbContext;
 
-    public PostgresUnitOfWork(TContext dbContext) => _dbContext = dbContext;
+    public SqlUnitOfWork(TContext dbContext) => _dbContext = dbContext;
 
     public async Task ExecuteAsync(Func<Task> action, CancellationToken cancellationToken = default)
     {

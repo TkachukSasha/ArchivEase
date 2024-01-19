@@ -4,17 +4,25 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Core.Dal;
 
-internal sealed class ArchivEaseContext : DbContext
+public class ArchivEaseContext : DbContext
 {
-    internal DbSet<EncodingTable> EncodingTables => Set<EncodingTable>();
+    public ArchivEaseContext() { }
 
-    internal DbSet<EncodingAlgorithm> EncodingAlgorithms => Set<EncodingAlgorithm>();
+    public ArchivEaseContext(DbContextOptions<ArchivEaseContext> options) : base(options) { }
 
-    internal DbSet<EncodingLanguage> EncodingLanguages => Set<EncodingLanguage>();
+    public DbSet<EncodingTable> EncodingTables => Set<EncodingTable>();
 
-    internal DbSet<User> Users => Set<User>();
+    public DbSet<EncodingAlgorithm> EncodingAlgorithms => Set<EncodingAlgorithm>();
 
-    internal DbSet<Role> Roles => Set<Role>();
+    public DbSet<EncodingLanguage> EncodingLanguages => Set<EncodingLanguage>();
+
+    public DbSet<EncodingFile> EncodingFiles => Set<EncodingFile>();
+
+    public DbSet<User> Users => Set<User>();
+
+    public DbSet<Role> Roles => Set<Role>();
+
+    public DbSet<UserRole> UserRoles => Set<UserRole>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

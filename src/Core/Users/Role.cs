@@ -6,7 +6,9 @@ namespace Core.Users;
 
 public sealed class Role : Entity<RoleId>
 {
-    private static string[] roles =
+    public static string DefaultRole => "user";
+
+    private static string[] Roles =
     [
         "admin",
         "user"
@@ -17,34 +19,27 @@ public sealed class Role : Entity<RoleId>
     private Role(
         Guid id,
         string name,
-        Permissions permissions,
-        Guid userId
+        Permissions permissions
     ) : base(id)
     {
         Name = name;
         Permissions = permissions;
-        UserId = userId;
     }
 
-    public string Name { get; } = string.Empty;
+    public string Name { get; } = DefaultRole;
 
     public Permissions Permissions { get; }
 
-    public Guid UserId { get; }
-
-    public User? User { get; }
-
     public static Result<Role> Init(
         string name,
-        Permissions permissions,
-        Guid userId
+        Permissions permissions
     ) =>
         Result.Ensure(
             name,
-            (_ => roles.Contains(name), RoleErrors.RoleNameMustBeInExepectedRangeOfRoles),
+            (_ => Roles.Contains(name), RoleErrors.RoleNameMustBeInExepectedRangeOfRoles),
             (_ => !string.IsNullOrWhiteSpace(name), RoleErrors.RoleNameMustBeProvide)
         )
-        .Map(_ => new Role(new RoleId(), name, permissions, userId));
+        .Map(_ => new Role(new RoleId(), name, permissions));
 }
 
 public sealed class RoleId : TypeId

@@ -1,5 +1,6 @@
 ﻿using SharedKernel.Builders.Base;
 using SharedKernel.Builders;
+using System.Text;
 
 namespace Core.Encodings.Builders.Huffman;
 
@@ -42,28 +43,27 @@ public sealed class HuffmanEncodeBuilder
 
     public (string, EncodingTableElements) Build()
     {
-        Dictionary<char, string> codes = new Dictionary<char, string>();
+        var codes = EncodingTableElements!.ToDictionary(element => element.Symbol, element => element.Code);
 
-        foreach (var element in EncodingTableElements!)
-            codes[element.Symbol] = element.Code;
+        var response = new StringBuilder(Content!.Length);
 
-        string response = "";
-
-        foreach (char c in Content!.AsSpan())
+        foreach (var c in Content.AsSpan())
         {
-            if (codes.ContainsKey(c))
-                response += codes[c];
+            if (codes.TryGetValue(c, out var code))
+                response.Append(code);
             else
                 throw new ArgumentException($"Symbol {c} not found in the encoding table.");
         }
 
-        return (response, EncodingTableElements!);
+        return (response.ToString()!, EncodingTableElements!);
     }
 
     #region local
     private void FillSymbolFrequency()
-        => _symbolFrequency = Content!.GroupBy(c => c)
-            .ToDictionary(gr => gr.Key, gr => gr.Count());
+    {
+        foreach (var c in Content!.AsSpan())
+            _symbolFrequency[c] = _symbolFrequency.GetValueOrDefault(c) + 1;
+    }
 
     private void FillEncodingElements(string code)
     {

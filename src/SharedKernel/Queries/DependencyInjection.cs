@@ -21,4 +21,11 @@ public static class DependencyInjection
 
         return services;
     }
+
+    public static IServiceCollection AddPagedQueryDecorator(this IServiceCollection services)
+    {
+        services.TryDecorate(typeof(IQueryHandler<,>), typeof(PagedQueryHandlerDecorator<,>));
+
+        return services;
+    }
 }

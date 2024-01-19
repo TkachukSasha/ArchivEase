@@ -5,13 +5,18 @@ using SharedKernel.Dal;
 
 namespace Core.Dal;
 
-public static class DependencyInjection
+internal static class DependencyInjection
 {
-    public static IServiceCollection AddDataLayer(this IServiceCollection services, string connectionString)
+    internal static IServiceCollection AddDataLayer(this IServiceCollection services, string connectionString)
     {
         services.AddDbContext<ArchivEaseContext>(options =>
         {
-            options.UseNpgsql(connectionString);
+            options.UseSqlServer(connectionString, sqlActions =>
+            {
+                sqlActions.CommandTimeout(30);
+            });
+
+            options.EnableSensitiveDataLogging(true);
         });
 
         services.AddDal<ArchivEaseContext>();
@@ -19,8 +24,6 @@ public static class DependencyInjection
         services
             .AddInitializer<UsersInitializer>()
             .AddInitializer<EncodingsInitializer>();
-
-        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
         return services;
     }

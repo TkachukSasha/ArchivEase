@@ -11,7 +11,7 @@ internal sealed class UsersInitializer : BaseInitializer<ArchivEaseContext, User
 {
     private readonly IPasswordManager _passwordManager;
 
-    internal UsersInitializer(ArchivEaseContext context, ILogger<UsersInitializer> logger, IPasswordManager passwordManager)
+    public UsersInitializer(ArchivEaseContext context, ILogger<UsersInitializer> logger, IPasswordManager passwordManager)
         : base(context, logger)
     {
         _passwordManager = passwordManager;
@@ -19,37 +19,32 @@ internal sealed class UsersInitializer : BaseInitializer<ArchivEaseContext, User
 
     public async Task InitAsync()
     {
-        Guid userId = Guid.Empty;
+        if (await _context.Users.AnyAsync()) return;
 
-        if (!await _context.Users.AnyAsync())
-            userId = await InitUsersAsync();
-
-        if (!await _context.Roles.AnyAsync())
-            await InitRolesAsync(userId);
+        await InitUsersAsync();
 
         await _context.SaveChangesAsync();
     }
 
-    private async Task<Guid> InitUsersAsync()
+    private async Task InitUsersAsync()
     {
         var user = User.Init("@CrySoul1l", _passwordManager.Secure("1337Master")).Value;
 
+        List<Role> roles = new() 
+        { 
+            Role.Init("admin", Permissions.All).Value,
+            Role.Init("user", Permissions.ManageAccountInformation | Permissions.EncodeFile | Permissions.DecodeFile | Permissions.ViewFiles).Value
+        };
+
         await _context.Users.AddAsync(user);
 
+        await _context.Roles.AddRangeAsync(roles);
+
+        foreach(var role in roles)
+        {
+            await _context.UserRoles.AddAsync(UserRole.Init(user.Id, role.Id).Value);
+        }
+
         _logger.Log(LogLevel.Information, "users initialized succesessfully!");
-
-        return user.Id.Value;
-    }
-
-    private async Task InitRolesAsync(Guid userId)
-    {
-        var adminRole = Role.Init("admin", Permissions.All, userId).Value;
-
-        var userRole = Role.Init("user", Permissions.ManageAccountInformation | Permissions.EncodeFile | Permissions.DecodeFile, userId).Value;
-
-        await _context.Roles.AddAsync(adminRole);
-        await _context.Roles.AddAsync(userRole);
-
-        _logger.LogInformation("roles initialized succesessfully!");
     }
 }

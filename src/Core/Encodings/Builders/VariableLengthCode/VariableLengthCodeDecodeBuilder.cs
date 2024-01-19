@@ -43,12 +43,11 @@ public sealed class VariableLengthCodeDecodeBuilder
     #region local
     private void TransformText()
     {
-        var response = new StringBuilder();
+        var response = new StringBuilder(EncodedContent!.Length);
 
         foreach (byte code in EncodedContent!)
         {
-            var binChunk = ConvertBytesToString(code);
-            response.Append(binChunk);
+            ConvertBytesToString(code, response);
         }
 
         var decodedText = _decodingTree?.Decode(response.ToString());
@@ -58,7 +57,7 @@ public sealed class VariableLengthCodeDecodeBuilder
 
     private void ExportText(string content)
     {
-        var response = new StringBuilder();
+        var response = new StringBuilder(content.Length);
 
         bool isCapital = false;
 
@@ -78,7 +77,16 @@ public sealed class VariableLengthCodeDecodeBuilder
         _content = response.ToString().TrimEnd();
     }
 
-    private string ConvertBytesToString(byte code)
-        => Convert.ToString(code, 2).PadLeft(8, '0');
+    private void ConvertBytesToString
+    (
+        byte code,
+        StringBuilder response
+    )
+    {
+        var span = new Span<char>(new char[8]);
+        var binChunk = Convert.ToString(code, 2).PadLeft(8, '0').AsSpan();
+        binChunk.CopyTo(span);
+        response.Append(span);
+    }
     #endregion
 }

@@ -1,5 +1,6 @@
 ﻿using SharedKernel.Builders.Base;
 using SharedKernel.Builders;
+using System.Text;
 
 namespace Core.Encodings.Builders.ShannonFano;
 
@@ -44,42 +45,33 @@ public sealed class ShannonFanoEncodeBuilder
 
     public (string, EncodingTableElements) Build()
     {
-        Dictionary<char, string> codes = new Dictionary<char, string>();
+        var codes = EncodingTableElements!.ToDictionary(element => element.Symbol, element => element.Code);
 
-        foreach (var element in EncodingTableElements!)
-            codes[element.Symbol] = element.Code;
+        var response = new StringBuilder(Content!.Length);
 
-        string response = "";
+        foreach (var c in Content.AsSpan())
+            response.Append(codes[c]);
 
-        foreach (char c in Content!)
-            response += codes[c];
-
-        return (response, EncodingTableElements);
+        return (response.ToString()!, EncodingTableElements!);
     }
 
     #region local
     private void FillSymbolFrequency()
     {
-        foreach (char c in Content!.AsSpan())
-        {
-            if (!_symbolFrequency.ContainsKey(c))
-                _symbolFrequency.TryAdd(c, 1);
-
-            _symbolFrequency[c]++;
-        }
+        foreach (var c in Content!.AsSpan())
+            _symbolFrequency[c] = _symbolFrequency.GetValueOrDefault(c) + 1;
     }
 
     private void FillElementsStatistic()
     {
-        List<SymbolStatistic> codes = _symbolFrequency.Select(kv => new SymbolStatistic
+        var codes = _symbolFrequency.Select(kv => new SymbolStatistic
         {
             Symbol = kv.Key,
             Frequency = kv.Value
-        }).ToList();
-
-        codes = codes.OrderByDescending(code => code.Frequency)
-                     .ThenBy(code => code.Symbol)
-                     .ToList();
+        })
+          .OrderByDescending(code => code.Frequency)
+          .ThenBy(code => code.Symbol)
+          .ToList();
 
         AssignCodes(codes);
 
@@ -91,12 +83,7 @@ public sealed class ShannonFanoEncodeBuilder
     {
         foreach (var kvp in _elementsStatistic)
         {
-            string byteStr = Convert.ToString(kvp.Value.Bits, 2);
-
-            if (byteStr.Length < kvp.Value.Size)
-            {
-                byteStr = byteStr.PadLeft(kvp.Value.Size, '0');
-            }
+            string byteStr = Convert.ToString(kvp.Value.Bits, 2).PadLeft(kvp.Value.Size, '0');
 
             EncodingTableElements?.Add(EncodingTableElement.Init(kvp.Key, byteStr).Value);
         }
@@ -114,9 +101,7 @@ public sealed class ShannonFanoEncodeBuilder
             codes[i].Size++;
 
             if (i >= divider)
-            {
                 codes[i].Bits |= 1;
-            }
         }
 
         AssignCodes(codes.GetRange(0, divider));
@@ -124,14 +109,11 @@ public sealed class ShannonFanoEncodeBuilder
 
         int BestPosition()
         {
-            int total = 0;
+            int total = codes.Sum(code => code.Frequency);
+            int left = codes[0].Frequency;
+
             int bestPosition = 0;
             int previousDiff = int.MaxValue;
-
-            foreach (var code in codes)
-                total += code.Frequency;
-
-            int left = codes[0].Frequency;
 
             for (int i = 0; i < codes.Count - 1; i++)
             {

@@ -8,7 +8,8 @@ public class EncodingAlgorithm : Enumeration<EncodingAlgorithm>
     public static readonly EncodingAlgorithm ShannonFanoAlgorithm = new EncodingShannonFanoAlgorithm();
     public static readonly EncodingAlgorithm HuffmanAlgorithm = new EncodingHuffmanAlgorithm();
 
-    public EncodingAlgorithm(
+    public EncodingAlgorithm
+    (
         Guid value,
         string name
     ) : base(value, name)

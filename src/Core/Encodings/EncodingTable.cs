@@ -6,6 +6,8 @@ namespace Core.Encodings;
 
 public sealed class EncodingTable : Entity<EncodingTableId>
 {
+    private readonly List<EncodingFile> _encodingFiles = new();
+
     private EncodingTable(
         Guid id,
         string? encodedContent,
@@ -37,6 +39,8 @@ public sealed class EncodingTable : Entity<EncodingTableId>
     public Guid? EncodingLanguageId { get; }
 
     public EncodingTableElements EncodingTableElements { get; }
+
+    public IReadOnlyCollection<EncodingFile> EncodingFiles => _encodingFiles;
 
     public static Result<EncodingTable> Init(
         string? encodedContent,

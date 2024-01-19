@@ -7,12 +7,13 @@ public enum Permissions
     ViewRoles = 1,
     ManageRoles = 2,
     ViewUsers = 4,
-    ManagerUsers = 8,
-    ViewPermissions = 16,
-    ManagerPermissions = 32,
-    ManageAccountInformation = 64,
-    EncodeFile = 128,
-    DecodeFile = 256,
+    ViewFiles = 8,
+    ManagerUsers = 16,
+    ViewPermissions = 32,
+    ManagerPermissions = 64,
+    ManageAccountInformation = 128,
+    EncodeFile = 256,
+    DecodeFile = 512,
     All = ~None
 }
 

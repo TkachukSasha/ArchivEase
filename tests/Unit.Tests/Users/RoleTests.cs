@@ -11,7 +11,7 @@ public class RoleTests
     [InlineData(null)]
     public void Should_Failed_WhenRoleName_IsNullOrWhiteSpace(string roleName)
     {
-        Result<Role> role = Role.Init(roleName, Permissions.All, Guid.NewGuid());
+        Result<Role> role = Role.Init(roleName, Permissions.All);
 
         role.IsFailure.Should().BeTrue();
         role.Errors.Should().Contain(RoleErrors.RoleNameMustBeInExepectedRangeOfRoles);

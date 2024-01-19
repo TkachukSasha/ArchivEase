@@ -21,8 +21,6 @@ public sealed class User : Entity<UserId>
 
     public string Password { get; } = string.Empty;
 
-    public List<Role> Roles { get; } = new List<Role>();
-
     public static Result<User> Init(
        string userName,
        string password

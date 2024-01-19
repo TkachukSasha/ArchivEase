@@ -8,7 +8,7 @@ namespace Core.Dal.Initializers;
 
 internal sealed class EncodingsInitializer : BaseInitializer<ArchivEaseContext, EncodingsInitializer>, IDataInitializer
 {
-    internal EncodingsInitializer(ArchivEaseContext context, ILogger<EncodingsInitializer> logger)
+    public EncodingsInitializer(ArchivEaseContext context, ILogger<EncodingsInitializer> logger)
         : base(context, logger)
     {
     }

@@ -12,7 +12,7 @@ public static class DependencyInjection
         services.AddHostedService<DatabaseInitializer<TContext>>();
         services.AddHostedService<DataInitializer>();
 
-        services.AddScoped<IUnitOfWork, PostgresUnitOfWork<TContext>>();
+        services.AddScoped<IUnitOfWork, SqlUnitOfWork<TContext>>();
 
         return services;
     }

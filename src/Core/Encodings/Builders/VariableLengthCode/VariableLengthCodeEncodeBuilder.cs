@@ -11,7 +11,7 @@ public sealed class VariableLengthCodeEncodeBuilder
     <
         VariableLengthCodeEncodeBuilder,
         EncodingTableElements,
-string
+        string
     >
 {
     public VariableLengthCodeEncodeBuilder WithContent(string content)
@@ -43,9 +43,9 @@ string
     #region local
     private void TranformContent()
     {
-        var response = new StringBuilder();
+        var response = new StringBuilder(Content!.Length);
 
-        foreach (char symbol in Content.AsSpan())
+        foreach (char symbol in Content!.AsSpan())
         {
             if (char.IsUpper(symbol))
             {
@@ -62,7 +62,7 @@ string
 
     private byte[] Encode(int chunkSize)
     {
-        var response = new StringBuilder();
+        var response = new StringBuilder(Content!.Length);
 
         foreach (char symbol in Content.AsSpan())
         {
@@ -84,7 +84,8 @@ string
         return encodedBytes.ToArray();
     }
 
-    private BinaryChunks SplitByChunks(
+    private BinaryChunks SplitByChunks
+    (
         string content,
         int chunkSize
     )
@@ -99,7 +100,7 @@ string
 
         BinaryChunks result = new BinaryChunks();
 
-        StringBuilder buffer = new StringBuilder();
+        StringBuilder buffer = new StringBuilder(contentLength);
 
         for (int i = 0; i < contentLength; i++)
         {
