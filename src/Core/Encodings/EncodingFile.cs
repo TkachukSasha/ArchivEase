@@ -46,8 +46,6 @@ public sealed class EncodingFile : Entity<EncodingFileId>
 
     public Guid EncodingTableId { get; }
 
-    public EncodingTable? EncodingTable { get; }
-
     public static Result<EncodingFile> Init(
         Guid encodingTableId,
         string filePath,

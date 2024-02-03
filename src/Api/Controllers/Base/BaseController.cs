@@ -8,5 +8,8 @@ public class BaseController : ControllerBase
 {
     protected readonly IDispatcher _dispatcher;
 
-    public BaseController(IDispatcher dispatcher) => _dispatcher = dispatcher;
+    public BaseController
+    (
+        IDispatcher dispatcher
+    ) => _dispatcher = dispatcher;
 }

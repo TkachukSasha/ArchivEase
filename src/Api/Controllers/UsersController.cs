@@ -6,6 +6,7 @@ using SharedKernel.Authentication;
 using SharedKernel.Dispatchers;
 using Core.Commands;
 using SharedKernel.Errors;
+using Core.Dtos;
 
 namespace Api.Controllers;
 
@@ -16,14 +17,14 @@ public class UsersController : BaseController
     public UsersController
     (
         IDispatcher dispatcher
-    ) : base(dispatcher)
+    ) : base( dispatcher)
     {
     }
 
     [HttpPost("sign-in")]
     public async Task<IActionResult> SignInAsync([FromBody] SignInCommand command, CancellationToken cancellationToken)
     {
-        Result result = await _dispatcher.SendAsync(command, cancellationToken);
+        Result<UserResponseDto> result = await _dispatcher.SendAsync(command, cancellationToken);
 
         return result is not null ? Ok(result) : NotFound();
     }
@@ -31,7 +32,7 @@ public class UsersController : BaseController
     [HttpPost("sign-up")]
     public async Task<IActionResult> SignUpAsync([FromBody] SignUpCommand command, CancellationToken cancellationToken)
     {
-        Result result = await _dispatcher.SendAsync(command, cancellationToken);
+        Result<UserResponseDto> result = await _dispatcher.SendAsync(command, cancellationToken);
 
         return result.IsSuccess ? Ok(result) : BadRequest();
     }

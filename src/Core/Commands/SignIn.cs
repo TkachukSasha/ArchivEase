@@ -1,10 +1,10 @@
 ﻿using Core.Dal;
+using Core.Dtos;
 using Core.Users;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel.Authentication;
 using SharedKernel.Commands;
 using SharedKernel.Errors;
-using System.Threading;
 
 namespace Core.Commands;
 
@@ -12,9 +12,9 @@ public record SignInCommand
 (
     string UserName,
     string Password
-) : ICommand<Result>;
+) : ICommand<Result<UserResponseDto>>;
 
-public sealed class SignInCommandHandler : ICommandHandler<SignInCommand, Result>
+internal sealed class SignInCommandHandler : ICommandHandler<SignInCommand, Result<UserResponseDto>>
 {
     private readonly ArchivEaseContext _context;
     private readonly IPasswordManager _passwordManager;
@@ -32,7 +32,7 @@ public sealed class SignInCommandHandler : ICommandHandler<SignInCommand, Result
         _jwtTokenProvider = jwtTokenProvider;
     }
 
-    public async Task<Result> HandleAsync(SignInCommand command, CancellationToken cancellationToken = default)
+    public async Task<Result<UserResponseDto>> HandleAsync(SignInCommand command, CancellationToken cancellationToken = default)
     {
         User? user = await _context
             .Users
@@ -41,17 +41,19 @@ public sealed class SignInCommandHandler : ICommandHandler<SignInCommand, Result
 
         if (user is null)
         {
-            return Result.Failure<JsonAccessToken>(UserErrors.UserIsNotFound(command.UserName));
+            return Result.Failure<UserResponseDto>(UserErrors.UserIsNotFound(command.UserName));
         }
 
         bool isValidPassword = _passwordManager.Validate(command.Password, user.Password);
 
         if (!isValidPassword)
         {
-            return Result.Failure<JsonAccessToken>(UserErrors.UserPasswordIsNotValid(command.Password));
+            return Result.Failure<UserResponseDto>(UserErrors.UserPasswordIsNotValid(command.Password));
         }
 
-        var permissionValue = (int)await GetUserRolePermissionsAsync(user.Id, cancellationToken);
+        var (isAnyAdminRole, permissions) = await GetUserRoleInfoAsync(user.Id, cancellationToken);
+
+        var permissionValue = (int)permissions;
 
         var token = _jwtTokenProvider.CreateToken
         (
@@ -60,10 +62,10 @@ public sealed class SignInCommandHandler : ICommandHandler<SignInCommand, Result
             permissionValue.ToString()
         );
 
-        return Result.Success(token);
+        return Result.Success(new UserResponseDto(user.Id, user.UserName, isAnyAdminRole, token.Token));
     }
 
-    private async Task<Permissions> GetUserRolePermissionsAsync
+    private async Task<(bool, Permissions)> GetUserRoleInfoAsync
     (
         Guid userId,
         CancellationToken cancellationToken
@@ -84,8 +86,15 @@ public sealed class SignInCommandHandler : ICommandHandler<SignInCommand, Result
             .Where(r => userRolesIds.Contains(r.Id))
             .ToListAsync(cancellationToken);
 
-        return rolesPermissions
-            .Select(role => role.Permissions)
-            .Aggregate((current, next) => current | next);
+        var isAnyAdminRole = rolesPermissions
+            .Any(x => x.Name == Role.AdminRole);
+
+        return 
+        (
+            isAnyAdminRole, 
+            rolesPermissions
+                .Select(role => role.Permissions)
+                .Aggregate((current, next) => current | next)
+        );
     }
 }

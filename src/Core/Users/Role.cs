@@ -6,7 +6,10 @@ namespace Core.Users;
 
 public sealed class Role : Entity<RoleId>
 {
+    public static string AdminRole => "admin";
+
     public static string DefaultRole => "user";
+
 
     private static string[] Roles =
     [

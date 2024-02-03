@@ -1,0 +1,33 @@
+version: '3.4'
+
+services:
+  arhiv_ease_api:
+    image: ${DOCKER_REGISTRY-}api
+    build:
+      context: .
+      dockerfile: src/Api/Dockerfile
+    ports:
+        - "5000:5000"
+
+  arhiv_ease_database:
+    image: postgres:latest
+    container_name: arhiv_ease_database
+    environment:
+        - POSTGRES_DB=archiv_ease
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=postgres
+    volumes:
+        - ./containers/arhiv_ease_database:/var/lib.postgresql/data
+    ports:
+        - "5432:5432"
+    
+  arhiv_ease_seq:
+    image: datalust/seq:latest
+    container_name: arhiv_ease_seq
+    environment:
+        - ACCEPT_EULA=Y
+    ports:
+        - "5341:5341"
+        - "8081:80" 
+  
+   

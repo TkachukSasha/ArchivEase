@@ -44,8 +44,17 @@ internal sealed class EncodingConfigurations :
         builder.Property(x => x.FileUnitsOfMeasurement)
             .IsRequired();
 
-        builder.HasOne(x => x.EncodingTable)
-            .WithMany();
+        builder.Property(x => x.ContentType)
+            .IsRequired();
+
+        builder.Property(x => x.EncodedSize)
+            .IsRequired();
+
+        builder.Property(x => x.DefaultSize)
+            .IsRequired();
+
+        builder.Property(x => x.EncodingTableId)
+            .IsRequired();
     }
 
     public void Configure(EntityTypeBuilder<EncodingLanguage> builder)

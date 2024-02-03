@@ -1,0 +1,35 @@
+.paginator__items {
+    display: flex;
+    justify-content: center;
+    padding: 0;
+    margin: auto 0 0 0;
+    list-style-type: none;
+}
+
+.paginator__item button {
+    margin: 0 !important;
+    padding: 0.25rem 0.5rem;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 0.25rem;
+    background: none;
+}
+
+.paginator__item button:hover {
+    cursor: pointer;
+    background-color: silver;
+}
+
+.paginator__item button[disabled="disabled"] {
+    color: silver;
+    cursor: default;
+}
+
+.paginator__item button[disabled="disabled"]:hover {
+    cursor: default;
+    background-color: transparent;
+}
+
+.paginator__item button.active {
+    color: var(--vt-c-red)
+}

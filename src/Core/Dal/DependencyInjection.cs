@@ -9,11 +9,13 @@ internal static class DependencyInjection
 {
     internal static IServiceCollection AddDataLayer(this IServiceCollection services, string connectionString)
     {
-        services.AddDbContext<ArchivEaseContext>(options =>
+        services.AddDbContextPool<ArchivEaseContext>(options =>
         {
-            options.UseSqlServer(connectionString, sqlActions =>
+            options.UseNpgsql(connectionString, sqlActions =>
             {
                 sqlActions.CommandTimeout(30);
+
+                sqlActions.EnableRetryOnFailure(1);
             });
 
             options.EnableSensitiveDataLogging(true);

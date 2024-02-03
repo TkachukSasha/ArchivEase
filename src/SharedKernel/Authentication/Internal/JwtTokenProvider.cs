@@ -49,7 +49,7 @@ internal sealed class JwtTokenProvider : IJwtTokenProvider
             jwtClaims.Add(new Claim(ClaimTypes.Name, userName));
         }
 
-        var expiry = now.AddMinutes(_jwtOptions.AccessTokenExpiryMinutes);
+        var expiry = now.AddMinutes(_jwtOptions.AccessTokenExpiryMinutes * 3);
 
         var acess_token = _tokenGenerator.GenerateToken
         (

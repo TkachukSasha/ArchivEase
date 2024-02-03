@@ -12,8 +12,8 @@ public enum Permissions
     ViewPermissions = 32,
     ManagerPermissions = 64,
     ManageAccountInformation = 128,
-    EncodeFile = 256,
-    DecodeFile = 512,
+    EncodeFiles = 256,
+    DecodeFiles = 512,
     All = ~None
 }
 

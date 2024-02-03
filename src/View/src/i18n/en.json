@@ -1,0 +1,47 @@
+{
+  "header__buttons" : {
+    "sign-in" : "Sign in",
+    "sign-up" : "Sign up",
+    "files" : "Archive files",
+    "users" : "Users list",
+    "logout" : "Log out"
+  },
+  "sign-in__form": {
+    "title": "Sign in",
+    "labels" : {
+      "user_name" : "Username",
+      "password" : "Password"
+    },
+    "redirect" : {
+      "question" : "Don't have an account yet?",
+      "link" : "Sign up"
+    },
+    "button" : "Sign in"
+  },
+  "sign-up__form": {
+    "title": "Sign up",
+    "labels" : {
+      "user_name" : "Username",
+      "password" : "Password"
+    },
+    "redirect" : {
+      "question" : "Already registered?",
+      "link" : "Sign in"
+    },
+    "button" : "Sign up"
+  },
+  "drag_zone" : {
+    "upload-text" : "Drop files to upload",
+    "or-text" : "or",
+    "select-files-button" : "Select files",
+    "file-size-text" : "Maximum upload file size: 512MB."
+  },
+  "app__feature-options" : {
+    "encode" : "Compression (by algorithms)",
+    "decode" : "Decompression (by algorithms)"
+  },
+  "app__feature-options-desc" : {
+    "encode-desc" : "Compressing the file using the best algorithm according to the analysis of the submitted file",
+    "decode-desc" : "Uncompressed a file that has been compressed using the appropriate algorithm in this system"
+  }
+}

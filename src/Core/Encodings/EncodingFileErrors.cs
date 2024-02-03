@@ -1,4 +1,5 @@
-﻿using SharedKernel.Errors;
+﻿using Core.Users;
+using SharedKernel.Errors;
 
 namespace Core.Encodings;
 

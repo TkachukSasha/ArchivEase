@@ -14,7 +14,7 @@ public record GetUserQuery(Guid Id) : ICachedQuery<UserDto?>
     public TimeSpan? Expiry => TimeSpan.FromHours(1);
 }
 
-public sealed class GetUserQueryHandler : IQueryHandler<GetUserQuery, UserDto?>
+internal sealed class GetUserQueryHandler : IQueryHandler<GetUserQuery, UserDto?>
 {
     private readonly ArchivEaseContext _context;
     private readonly IMemoryCacheService _memoryCacheService;

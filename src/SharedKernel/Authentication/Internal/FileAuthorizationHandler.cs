@@ -34,7 +34,7 @@ internal class FileAuthorizationHandler : AuthorizationHandler<FileAuthorization
                 return Task.CompletedTask;
             }
 
-            if ((userPermissions & Permissions.EncodeFile | Permissions.DecodeFile) != 0)
+            if ((userPermissions & Permissions.EncodeFiles | Permissions.DecodeFiles) != 0)
             {
                 context.Succeed(requirement);
                 return Task.CompletedTask;

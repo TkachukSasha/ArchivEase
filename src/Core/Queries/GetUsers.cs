@@ -12,7 +12,7 @@ public class GetUsersQuery : PagedQuery<UserDto>
 }
 
 
-public sealed class GetUsersQueryHandler : IQueryHandler<GetUsersQuery, Paged<UserDto>>
+internal sealed class GetUsersQueryHandler : IQueryHandler<GetUsersQuery, Paged<UserDto>>
 {
     private readonly ArchivEaseContext _context;
 
@@ -26,7 +26,15 @@ public sealed class GetUsersQueryHandler : IQueryHandler<GetUsersQuery, Paged<Us
         IQueryable<UserDto> users = _context
                        .Users
                        .AsNoTracking()
-                       .Select(x => new UserDto(x!.Id, x.UserName));
+                       .Select
+                       (
+                         x => 
+                             new UserDto
+                             (
+                                 x!.Id,
+                                 x.UserName
+                             )
+                       );
 
         return await users.PaginateAsync(query, cancellationToken);
     }

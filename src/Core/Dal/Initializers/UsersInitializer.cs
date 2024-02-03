@@ -33,7 +33,7 @@ internal sealed class UsersInitializer : BaseInitializer<ArchivEaseContext, User
         List<Role> roles = new() 
         { 
             Role.Init("admin", Permissions.All).Value,
-            Role.Init("user", Permissions.ManageAccountInformation | Permissions.EncodeFile | Permissions.DecodeFile | Permissions.ViewFiles).Value
+            Role.Init("user", Permissions.ManageAccountInformation | Permissions.EncodeFiles | Permissions.DecodeFiles | Permissions.ViewFiles).Value
         };
 
         await _context.Users.AddAsync(user);

@@ -11,7 +11,7 @@ public class GetFilesQuery : PagedQuery<FileDto>
 {
 }
 
-public sealed class GetFilesQueryHandler : IQueryHandler<GetFilesQuery, Paged<FileDto>>
+internal sealed class GetFilesQueryHandler : IQueryHandler<GetFilesQuery, Paged<FileDto>>
 {
     private readonly ArchivEaseContext _context;
 
@@ -25,7 +25,18 @@ public sealed class GetFilesQueryHandler : IQueryHandler<GetFilesQuery, Paged<Fi
         IQueryable<FileDto> files = _context
                       .EncodingFiles
                       .AsNoTracking()
-                      .Select(x => new FileDto(x.FileName, x.DefaultSize, x.EncodedSize, x.FilePath, x.FileUnitsOfMeasurement));
+                      .Select
+                      (
+                        x => 
+                            new FileDto
+                            (
+                                x.FileName, 
+                                x.DefaultSize,
+                                x.EncodedSize,
+                                x.FilePath,
+                                x.FileUnitsOfMeasurement
+                            )
+                      );
 
         return await files.PaginateAsync(query, cancellationToken);
     }

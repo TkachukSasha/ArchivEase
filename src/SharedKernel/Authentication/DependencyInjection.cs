@@ -41,6 +41,16 @@ public static class DependencyInjection
                     ValidateIssuer = true,
                     ValidateAudience = true
                 };
+
+                jwt.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        context.Token = context.Request.Cookies["jwt"];
+
+                        return Task.CompletedTask;
+                    }
+                };
             });
 
         services.AddAuthorization(options =>
