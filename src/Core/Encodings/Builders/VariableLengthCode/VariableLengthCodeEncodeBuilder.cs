@@ -72,56 +72,7 @@ public sealed class VariableLengthCodeEncodeBuilder
             response.Append(EncodingTableElements!.FirstOrDefault(x => x.Symbol == symbol)!.Code);
         }
 
-        BinaryChunks chunks = SplitByChunks(response.ToString(), chunkSize);
-
-        Span<byte> encodedBytes = new byte[chunks.Count];
-
-        int index = 0;
-
-        foreach (var binaryChunk in chunks)
-            encodedBytes[index++] = binaryChunk.Byte();
-
-        return encodedBytes.ToArray();
-    }
-
-    private BinaryChunks SplitByChunks
-    (
-        string content,
-        int chunkSize
-    )
-    {
-        int contentLength = content.Length;
-
-        int chunksCount = contentLength / chunkSize;
-
-#pragma warning disable S1854 // Unused assignments should be removed
-        if (contentLength % chunkSize != 0) chunksCount++;
-#pragma warning restore S1854 // Unused assignments should be removed
-
-        BinaryChunks result = new BinaryChunks();
-
-        StringBuilder buffer = new StringBuilder(contentLength);
-
-        for (int i = 0; i < contentLength; i++)
-        {
-            buffer.Append(content[i]);
-
-            if ((i + 1) % chunkSize == 0)
-            {
-                result.Add(new BinaryChunk(Convert.ToByte(buffer.ToString(), 2)));
-                buffer.Clear();
-            }
-        }
-
-        if (buffer.Length != 0)
-        {
-            string lastChunk = buffer.ToString();
-            lastChunk += new string('0', chunkSize - lastChunk.Length);
-
-            result.Add(new BinaryChunk(Convert.ToByte(lastChunk, 2)));
-        }
-
-        return result;
+        return ConvertChunksToByteArray(response.ToString());
     }
     #endregion
 }

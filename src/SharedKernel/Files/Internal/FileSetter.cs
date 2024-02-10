@@ -8,10 +8,10 @@ internal sealed class FileSetter : IFileSetter
 
     public FileSetter(FileOptions options) => _storagePath = options.Path;
 
-    public async Task<Result<string>> SetFileAsync(Stream stream, string fileName)
+    public async Task<Result<FileInfoDto>> SetFileAsync(Stream stream, string fileName)
     {
         if (string.IsNullOrWhiteSpace(fileName))
-            return Result.Failure<string>(FileErrors.FileNameMustBeProvide);
+            return Result.Failure<FileInfoDto>(FileErrors.FileNameMustBeProvide);
 
         var filePath = Path.Combine(_storagePath, fileName);
 
@@ -20,6 +20,12 @@ internal sealed class FileSetter : IFileSetter
             await stream.CopyToAsync(fileStream);
         }
 
-        return Result.Success(filePath);
+        var fileLength = new FileInfo(filePath).Length;
+
+        return Result.Success(new FileInfoDto
+        {
+            FileLength = fileLength,
+            FilePath = filePath
+        });
     }
 }

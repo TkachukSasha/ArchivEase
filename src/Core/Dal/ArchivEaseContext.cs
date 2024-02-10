@@ -18,6 +18,8 @@ public class ArchivEaseContext : DbContext
 
     public DbSet<EncodingFile> EncodingFiles => Set<EncodingFile>();
 
+    public DbSet<EncodingTraining> EncodingTrainings => Set<EncodingTraining>();
+
     public DbSet<User> Users => Set<User>();
 
     public DbSet<Role> Roles => Set<Role>();

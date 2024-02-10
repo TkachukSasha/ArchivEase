@@ -1,35 +1,39 @@
-﻿using Core.Dal;
-using Core.Dtos;
+﻿using Core.Encodings.Builders.VariableLengthCode;
+using Core.Encodings;
 using SharedKernel.Commands;
 using SharedKernel.Errors;
-using SharedKernel.Files;
+
 namespace Core.Commands;
 
-public record DecodeCommand
+public sealed record DecodeCommand
 (
-    List<FileEntryDto> FileEntries
+    string? Text,
+    byte[] Data,
+    EncodingTableElements EncodingTableElements,
+    string Algorithm
 ) : ICommand<Result>;
 
 internal sealed class DecodeCommandHandler : ICommandHandler<DecodeCommand, Result>
 {
-    private readonly ArchivEaseContext _context;
-    private readonly IFileGetter _fileGetter;
-
-    public DecodeCommandHandler
-    (
-        ArchivEaseContext context,
-        IFileGetter fileGetter
-    )
-    {
-        _context = context;
-        _fileGetter = fileGetter;
-    }
-
     public async Task<Result> HandleAsync(DecodeCommand command, CancellationToken cancellationToken = default)
     {
-        foreach (var file in command.FileEntries)
-            _ = await _fileGetter.GetFileBytesAsync(file.FileName);
+        string variableLength = EncodingAlgorithm.VariableLengthCodeAlgorithm.Name;
+
+        if (command.Algorithm == variableLength)
+        {
+            return Result.Success(VariableLengthEncodeAlgorithm(command.Data, command.EncodingTableElements));
+        }
 
         return Result.Success();
+    }
+
+    private string VariableLengthEncodeAlgorithm(byte[] data, EncodingTableElements tableElements)
+    {
+        return VariableLengthCodeDecodeBuilder
+            .Init()
+            .WithContent(data)
+            .WithTableElements(tableElements)
+            .PrepareContent()
+            .Build();
     }
 }

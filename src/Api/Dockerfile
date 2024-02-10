@@ -8,6 +8,7 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["src/Api/Api.csproj", "src/Api/"]
 COPY ["src/Core/Core.csproj", "src/Core/"]
+COPY ["src/ML/ML.csproj", "src/ML/"]
 COPY ["src/SharedKernel/SharedKernel.csproj", "src/SharedKernel/"]
 RUN dotnet restore "./src/Api/./Api.csproj"
 COPY . .
@@ -21,4 +22,5 @@ RUN dotnet publish "./Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:Use
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+ENV ASPNETCORE_ENVIRONMENT Production
 ENTRYPOINT ["dotnet", "Api.dll"]

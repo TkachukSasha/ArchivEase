@@ -36,12 +36,12 @@ public sealed class HuffmanEncodeBuilder
 
         FillSymbolFrequency();
 
-        FillEncodingElements(string.Empty);
+        FillEncodingElements();
 
         return this;
     }
 
-    public (string, EncodingTableElements) Build()
+    public (byte[], EncodingTableElements) Build()
     {
         var codes = EncodingTableElements!.ToDictionary(element => element.Symbol, element => element.Code);
 
@@ -55,7 +55,9 @@ public sealed class HuffmanEncodeBuilder
                 throw new ArgumentException($"Symbol {c} not found in the encoding table.");
         }
 
-        return (response.ToString()!, EncodingTableElements!);
+        byte[] encodedBytes = ConvertChunksToByteArray(response.ToString());
+
+        return (encodedBytes.ToArray()!, EncodingTableElements!);
     }
 
     #region local
@@ -65,13 +67,13 @@ public sealed class HuffmanEncodeBuilder
             _symbolFrequency[c] = _symbolFrequency.GetValueOrDefault(c) + 1;
     }
 
-    private void FillEncodingElements(string code)
+    private void FillEncodingElements()
     {
         var nodes = _symbolFrequency.Select(pair => new HuffmanNode { Symbol = pair.Key, Frequency = pair.Value }).ToList();
 
         while (nodes.Count > 1)
         {
-            nodes = nodes.OrderBy(node => node.Frequency).ToList();
+            nodes = nodes.OrderByDescending(node => node.Frequency).ToList();
 
             var left = nodes[0];
             var right = nodes[1];

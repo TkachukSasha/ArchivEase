@@ -1,4 +1,5 @@
 .file__uploader-wrapper{
+    position: relative;
     padding: 3rem 1rem;
     max-width: 40rem;
     margin-top: 20vh;
@@ -54,6 +55,54 @@
 .file__uploader-size{
     font-size: 0.75rem;
     color: var(--vt-c-gray-soft);
+}
+
+.file__uploader-file-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2vh;
+    margin-bottom: 2vh;
+}
+
+.file__name {
+    flex-grow: 1;
+}
+
+.file__remove-btn {
+    margin-right: 1vh;
+}
+
+.file__remove-btn button:hover {
+    cursor: pointer;
+    background-color: silver;
+}
+
+.file__remove-btn button[disabled="disabled"] {
+    color: silver;
+    cursor: default;
+}
+
+.file__remove-btn button[disabled="disabled"]:hover {
+    cursor: default;
+    background-color: transparent;
+}
+
+.file__remove-btn button.active {
+    color: var(--vt-c-red)
+}
+
+.file__uploader-submit-btn {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 20px;
+    cursor: pointer;
+
+    background-color: var(--vt-c-black);
+    color: var(--vt-c-white-soft);
+    border: none;
+    border-radius: 5px;
 }
 
 @media (max-width: 800px) {

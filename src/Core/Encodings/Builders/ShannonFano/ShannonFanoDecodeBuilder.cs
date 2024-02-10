@@ -1,23 +1,24 @@
 ﻿using SharedKernel.Builders.Base;
 using SharedKernel.Builders;
+using System.Text;
 
 namespace Core.Encodings.Builders.ShannonFano;
 
 public sealed class ShannonFanoDecodeBuilder
     :
-    BaseDecodeBuilder<ShannonFanoDecodeBuilder, string, EncodingTableElements>,
+    BaseDecodeBuilder<ShannonFanoDecodeBuilder, byte[], EncodingTableElements>,
     IDecodeBuilder
     <
         ShannonFanoDecodeBuilder,
         EncodingTableElements,
-        string,
+        byte[],
         string
     >
 {
     private DecodingTreeNode? _decodingTree;
     private string _content = string.Empty;
 
-    public ShannonFanoDecodeBuilder WithContent(string content)
+    public ShannonFanoDecodeBuilder WithContent(byte[] content)
     {
         EncodedContent = content;
         return this;
@@ -38,7 +39,14 @@ public sealed class ShannonFanoDecodeBuilder
         if (!IsEncodingTableElementsProvided())
             return this;
 
-        _content = _decodingTree!.Decode(EncodedContent!);
+        var response = new StringBuilder(EncodedContent!.Length);
+
+        foreach (byte code in EncodedContent!)
+        {
+            ConvertChunkToString(code, response);
+        }
+
+        _content = _decodingTree!.Decode(response.ToString()!).TrimEnd();
 
         return this;
     }

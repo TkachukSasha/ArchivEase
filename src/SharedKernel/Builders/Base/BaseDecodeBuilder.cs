@@ -1,4 +1,6 @@
-﻿namespace SharedKernel.Builders.Base;
+﻿using System.Text;
+
+namespace SharedKernel.Builders.Base;
 
 public abstract class BaseDecodeBuilder<TDecoder, TContent, TTableElements>
     where TTableElements : IEnumerable<object>
@@ -23,4 +25,16 @@ public abstract class BaseDecodeBuilder<TDecoder, TContent, TTableElements>
 
     protected bool IsEncodingTableElementsProvided()
         => EncodingTableElements != null && EncodingTableElements!.Any();
+
+    protected void ConvertChunkToString
+    (
+        byte code,
+        StringBuilder response
+    )
+    {
+        var span = new Span<char>(new char[8]);
+        var binChunk = Convert.ToString(code, 2).PadLeft(8, '0').AsSpan();
+        binChunk.CopyTo(span);
+        response.Append(span);
+    }
 }

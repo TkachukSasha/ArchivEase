@@ -4,13 +4,13 @@ internal static class FileUnitsOfMeasurement
 {
     internal static class Names
     {
-        internal const string B = "b";
+        internal const string B = "B";
 
-        internal const string KB = "kb";
+        internal const string KB = "KB";
 
-        internal const string MB = "mb";
+        internal const string MB = "MB";
 
-        internal const string GB = "gb";
+        internal const string GB = "GB";
     }
 
     internal static class Size

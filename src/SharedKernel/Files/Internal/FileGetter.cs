@@ -8,15 +8,15 @@ internal sealed class FileGetter : IFileGetter
 
     public FileGetter(FileOptions options) => _storagePath = options.Path;
 
-    public async Task<Result> GetFileBytesAsync(string fileName)
+    public async Task<Result<FileResponse>> GetFileBytesAsync(string fileName)
     {
         if (string.IsNullOrWhiteSpace(fileName))
-            return Result.Failure(FileErrors.FileNameMustBeProvide);
+            return Result.Failure<FileResponse>(FileErrors.FileNameMustBeProvide);
 
         var filePath = Path.Combine(_storagePath, fileName);
 
         if (!File.Exists(filePath))
-            return Result.Failure(FileErrors.FileNotFound(filePath));
+            return Result.Failure<FileResponse>(FileErrors.FileNotFound(filePath));
 
         var fileBytes = await File.ReadAllBytesAsync(filePath);
 
@@ -27,14 +27,21 @@ internal sealed class FileGetter : IFileGetter
         });
     }
 
-    public string GetFileUnitsOfMeasurement(long length) =>
-        length switch
-        {
-            var l when l < FileUnitsOfMeasurement.Size.KB => FileUnitsOfMeasurement.Names.B,
-            var l when l < FileUnitsOfMeasurement.Size.MB => FileUnitsOfMeasurement.Names.KB,
-            var l when l < FileUnitsOfMeasurement.Size.GB => FileUnitsOfMeasurement.Names.MB,
-            _ => FileUnitsOfMeasurement.Names.GB
-        };
+    public (double, string) GetFileSizeUnitsOfMeasurement(long length)
+    {
+        if (length == 0) return (0.0d, FileUnitsOfMeasurement.Names.B);
+
+        string[] sizes = [
+            FileUnitsOfMeasurement.Names.B,
+            FileUnitsOfMeasurement.Names.KB,
+            FileUnitsOfMeasurement.Names.MB,
+            FileUnitsOfMeasurement.Names.GB
+        ];
+
+        int i = (int)Math.Floor(Math.Log(length) / Math.Log(1024));
+
+        return (length / Math.Pow(1024, i), sizes[i]);
+    }
 
     private string GetContentType(string fileExtension) =>
         fileExtension.ToLower() switch

@@ -27,12 +27,10 @@
 import { useRouter } from 'vue-router';
 import { useForm } from '@/compositions/form.js'
 import { useSignIn } from './compositions/signIn.js';
-import { useUserStore } from '@/stores/user.js';
 import Cookies from 'js-cookie';
+import { eventBus } from "@/eventBus.js";
 
 const router = useRouter();
-
-const userStore = useUserStore();
 
 const required = val => !!val;
 
@@ -58,17 +56,18 @@ const handleSubmit  = async () =>{
 
     const { signInResponse } = await useSignIn(userData);
 
-    const user = {
-      id: signInResponse.value.value?.id,
-      userName: signInResponse.value.value?.userName,
-      isAdmin: signInResponse.value.value?.isAdmin
-    };
-
-    userStore.setUser(user)
-
     const token = signInResponse.value.value?.token ?? '';
 
     Cookies.set('jwt', token);
+
+    const authState = {
+      isLoggedIn: true,
+      isAdmin: signInResponse.value.value?.isAdmin
+    }
+
+    window.localStorage.setItem('authState', JSON.stringify(authState));
+
+    eventBus.emit('authStateChanged', authState);
 
     await router.push('/');
   }

@@ -43,7 +43,7 @@ public sealed class ShannonFanoEncodeBuilder
         return this;
     }
 
-    public (string, EncodingTableElements) Build()
+    public (byte[], EncodingTableElements) Build()
     {
         var codes = EncodingTableElements!.ToDictionary(element => element.Symbol, element => element.Code);
 
@@ -52,7 +52,9 @@ public sealed class ShannonFanoEncodeBuilder
         foreach (var c in Content.AsSpan())
             response.Append(codes[c]);
 
-        return (response.ToString()!, EncodingTableElements!);
+        byte[] encodedBytes = ConvertChunksToByteArray(response.ToString());
+
+        return (encodedBytes.ToArray()!, EncodingTableElements!);
     }
 
     #region local

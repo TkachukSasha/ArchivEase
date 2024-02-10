@@ -20,29 +20,24 @@ public class FilesController : BaseController
     {
     }
 
-    [Authorization(Permissions.EncodeFiles)]
     [HttpPost("encode")]
     public async Task<IActionResult> EncodeFilesAsync([FromForm] List<IFormFile> files, CancellationToken cancellationToken)
     {
         var command = new EncodeCommand
-        (
-            files.Select(x => new FileEntryDto(x.FileName, x.ContentType, x.Length, 123, x.OpenReadStream())).ToList()
-        );
+         (
+             files.Select(x => new FileEntryDto(x.FileName, x.ContentType, x.Length, x.OpenReadStream())).ToList()
+         );
 
         return Ok(await _dispatcher.SendAsync(command, cancellationToken));
     }
 
-    [Authorization(Permissions.DecodeFiles)]
-    [HttpPost("decode")]
-    public async Task<IActionResult> DecodeFilesAsync([FromForm] List<IFormFile> files, CancellationToken cancellationToken)
-    {
-        var command = new DecodeCommand
-        (
-            files.Select(x => new FileEntryDto(x.FileName, x.ContentType, x.Length, 123, x.OpenReadStream())).ToList()
-        );
+    [HttpPost("encodev2")]
+    public async Task<IActionResult> EncodeAsync([FromBody] EncodeCommand command, CancellationToken cancellationToken)
+        => Ok(await _dispatcher.SendAsync(command, cancellationToken));
 
-        return Ok(await _dispatcher.SendAsync(command, cancellationToken));
-    }
+    [HttpPost("decodev2")]
+    public async Task<IActionResult> DecodeAsync([FromBody] DecodeCommand command, CancellationToken cancellationToken)
+    => Ok(await _dispatcher.SendAsync(command, cancellationToken));
 
     [Authorization(Permissions.ViewFiles)]
     [HttpGet]

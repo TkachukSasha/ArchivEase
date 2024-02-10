@@ -1,23 +1,24 @@
 ﻿using SharedKernel.Builders.Base;
 using SharedKernel.Builders;
+using System.Text;
 
 namespace Core.Encodings.Builders.Huffman;
 
 public sealed class HuffmanDecodeBuilder
     :
-    BaseDecodeBuilder<HuffmanDecodeBuilder, string, EncodingTableElements>,
+    BaseDecodeBuilder<HuffmanDecodeBuilder, byte[], EncodingTableElements>,
     IDecodeBuilder
     <
         HuffmanDecodeBuilder,
         EncodingTableElements,
-        string,
+        byte[],
         string
     >
 {
     private DecodingTreeNode? _decodingTree;
     private string _content = string.Empty;
 
-    public HuffmanDecodeBuilder WithContent(string content)
+    public HuffmanDecodeBuilder WithContent(byte[] content)
     {
         EncodedContent = content;
         return this;
@@ -38,7 +39,14 @@ public sealed class HuffmanDecodeBuilder
         if (!IsEncodingTableElementsProvided())
             return this;
 
-        _content = _decodingTree!.Decode(EncodedContent!);
+        var response = new StringBuilder();
+
+        foreach (byte code in EncodedContent!)
+        {
+            ConvertChunkToString(code, response);
+        }
+
+        _content = _decodingTree!.Decode(response.ToString()!).TrimEnd();
 
         return this;
     }

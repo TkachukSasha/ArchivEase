@@ -20,11 +20,6 @@
     transition: 0.5s ease;
 }
 
-.header__option:nth-child(3){
-    padding: 7px;
-    border: 2px solid var(--vt-c-divider-dark-2);
-}
-
 .header__menu{
     display: none;
 }
@@ -56,11 +51,6 @@
 
     .header__option-text{
         color: var(--vt-c-white-soft)
-    }
-
-    .header__option:nth-child(3){
-        border: 2px solid var(--vt-c-divider-dark-2);
-        margin-bottom: 20px;
     }
 
     .header__menu{

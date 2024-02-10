@@ -34,14 +34,21 @@
     "upload-text" : "Drop files to upload",
     "or-text" : "or",
     "select-files-button" : "Select files",
-    "file-size-text" : "Maximum upload file size: 512MB."
+    "file-size-text" : "Maximum upload file size: 512MB.",
+    "files-upload-submit" : "Submit"
   },
   "app__feature-options" : {
     "encode" : "Compression (by algorithms)",
     "decode" : "Decompression (by algorithms)"
   },
   "app__feature-options-desc" : {
-    "encode-desc" : "Compressing the file using the best algorithm according to the analysis of the submitted file",
-    "decode-desc" : "Uncompressed a file that has been compressed using the appropriate algorithm in this system"
+    "encode-desc" : "Compression of files using the best algorithm based on the analysis of the submitted content",
+    "decode-desc" : "Uncompressing files that have been compressed using the appropriate algorithm in this system"
+  },
+  "files" : {
+    "not-found" : "No files found"
+  },
+  "users" : {
+    "not-found" : "No users found"
   }
 }

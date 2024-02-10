@@ -9,7 +9,7 @@ public class VariableLengthBuilderTests
 
     internal static string EngMessage => "My name is Sasha";
 
-    internal static EncodingTableElements EnglishTable => new EncodingTableElements()
+    internal static EncodingTableElements EnglishTableElements => new EncodingTableElements()
     {
          EncodingTableElement.Init(' ', "11").Value,
          EncodingTableElement.Init('t', "1001").Value,
@@ -41,7 +41,7 @@ public class VariableLengthBuilderTests
          EncodingTableElement.Init('z', "000000000000").Value
     };
 
-    internal static EncodingTableElements UkrainianTable => new EncodingTableElements()
+    internal static EncodingTableElements UkrainianTableElements => new EncodingTableElements()
     {
          EncodingTableElement.Init(' ', "00000").Value,
          EncodingTableElement.Init('!', "00001").Value,
@@ -82,12 +82,12 @@ public class VariableLengthBuilderTests
     };
 
     [Theory]
-    [InlineData("ua-UA")]
-    [InlineData("en-US")]
+    [InlineData("английский (Соединенные Штаты)")]
+    [InlineData("ua (Ukraine)")]
     public void Should_EncodeAndDecode_MessageThatProvided(string languageName)
     {
-        string message = languageName == "ua-UA" ? UkrMessage : EngMessage;
-        EncodingTableElements tableElements = languageName == "ua-UA" ? UkrainianTable : EnglishTable;
+        string message = languageName == EncodingLanguage.Ukrainian.Name ? UkrMessage : EngMessage;
+        EncodingTableElements tableElements = languageName == EncodingLanguage.Ukrainian.Name ? UkrainianTableElements : EnglishTableElements;
 
         byte[] encodedData = VariableLengthCodeEncodeBuilder
             .Init()

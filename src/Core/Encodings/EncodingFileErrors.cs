@@ -1,5 +1,4 @@
-﻿using Core.Users;
-using SharedKernel.Errors;
+﻿using SharedKernel.Errors;
 
 namespace Core.Encodings;
 
@@ -20,9 +19,14 @@ public static class EncodingFileErrors
       "EncodingFile name must be provide or not be null"
     );
 
-    public static readonly Error EncodingFileUnitsOfMeasurementMustBeProvide = Error.Validation(
+    public static readonly Error EncodingEncodedFileUnitsOfMeasurementMustBeProvide = Error.Validation(
       $"[{nameof(EncodingFile)}]",
-      "EncodingFile units of measurement must be provide or not be null"
+      "EncodingFile encoded units of measurement must be provide or not be null"
+    );
+
+    public static readonly Error EncodingDefaultFileUnitsOfMeasurementMustBeProvide = Error.Validation(
+     $"[{nameof(EncodingFile)}]",
+     "EncodingFile default units of measurement must be provide or not be null"
     );
 
     public static readonly Error EncodingFileContentTypeMustBeProvide = Error.Validation(

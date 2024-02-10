@@ -47,7 +47,7 @@ public sealed class VariableLengthCodeDecodeBuilder
 
         foreach (byte code in EncodedContent!)
         {
-            ConvertBytesToString(code, response);
+            ConvertChunkToString(code, response);
         }
 
         var decodedText = _decodingTree?.Decode(response.ToString());
@@ -75,18 +75,6 @@ public sealed class VariableLengthCodeDecodeBuilder
         }
 
         _content = response.ToString().TrimEnd();
-    }
-
-    private void ConvertBytesToString
-    (
-        byte code,
-        StringBuilder response
-    )
-    {
-        var span = new Span<char>(new char[8]);
-        var binChunk = Convert.ToString(code, 2).PadLeft(8, '0').AsSpan();
-        binChunk.CopyTo(span);
-        response.Append(span);
     }
     #endregion
 }

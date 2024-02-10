@@ -13,29 +13,16 @@ public class EncodingTableTests
     {
         EncodingTableElements elements = new EncodingTableElements();
 
-        Result<EncodingTable> encodingTable = EncodingTable.Init("test", byteArray, Guid.Empty, encodingLanguageId, elements);
+        Result<EncodingTable> encodingTable = EncodingTable.Init(byteArray, Guid.Empty, encodingLanguageId, elements);
 
         encodingTable.IsFailure.Should().BeTrue();
         encodingTable.Errors.Should().Contain(EncodingTableErrors.EncodingTableElementsMustBeProvideOrNotBeNull);
     }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData(null)]
-    public void Should_Failed_WhenEncodingContent_IsNullOrWhiteSpace(string encodedContent)
-    {
-        EncodingTableElements elements = new EncodingTableElements();
-
-        Result<EncodingTable> encodingTable = EncodingTable.Init(encodedContent, Array.Empty<byte>(), Guid.Empty, Guid.NewGuid(), elements);
-
-        encodingTable.IsFailure.Should().BeTrue();
-        encodingTable.Errors.Should().Contain(EncodingTableErrors.EncodingTableEncodedContentMustBeProvide);
-    }
-
     [Fact]
     public void Should_Failed_WhenEncodingTableElements_AreNull()
     {
-        Result<EncodingTable> encodingTable = EncodingTable.Init("test", byteArray, Guid.Empty, Guid.Empty, null);
+        Result<EncodingTable> encodingTable = EncodingTable.Init(byteArray, Guid.Empty, Guid.Empty, null);
 
         encodingTable.IsFailure.Should().BeTrue();
         encodingTable.Errors.Should().Contain(EncodingTableErrors.EncodingTableElementsMustBeProvideOrNotBeNull);

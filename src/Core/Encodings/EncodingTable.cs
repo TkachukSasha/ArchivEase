@@ -6,18 +6,14 @@ namespace Core.Encodings;
 
 public sealed class EncodingTable : Entity<EncodingTableId>
 {
-    private readonly List<EncodingFile> _encodingFiles = new();
-
     private EncodingTable(
         Guid id,
-        string? encodedContent,
         byte[]? encodedContentBytes,
         Guid encodingAlgorithmId,
         Guid? encodingLanguageId,
         EncodingTableElements encodingTableElements
     ) : base(id)
     {
-        EncodedContent = encodedContent;
         EncodedContentBytes = encodedContentBytes;
         EncodingAlgorithmId = encodingAlgorithmId;
         EncodingLanguageId = encodingLanguageId;
@@ -30,8 +26,6 @@ public sealed class EncodingTable : Entity<EncodingTableId>
     {
     }
 
-    public string? EncodedContent { get; set; }
-
     public byte[]? EncodedContentBytes { get; set; }
 
     public Guid EncodingAlgorithmId { get; }
@@ -40,21 +34,18 @@ public sealed class EncodingTable : Entity<EncodingTableId>
 
     public EncodingTableElements EncodingTableElements { get; }
 
-    public IReadOnlyCollection<EncodingFile> EncodingFiles => _encodingFiles;
-
     public static Result<EncodingTable> Init(
-        string? encodedContent,
         byte[]? encodedContentBytes,
         Guid encodingAlgorithmId,
         Guid? encodingLanguageId,
         EncodingTableElements encodingTableElements
     ) =>
         Result.Ensure(
-            (encodedContent, encodedContentBytes, encodingTableElements),
-            (_ => !string.IsNullOrEmpty(encodedContent) || !encodedContentBytes.ArrayOfBytesIsNullOrEmpty(), EncodingTableErrors.EncodingTableEncodedContentMustBeProvide),
+            (encodedContentBytes, encodingTableElements),
+            (_ => !encodedContentBytes.ArrayOfBytesIsNullOrEmpty(), EncodingTableErrors.EncodingTableEncodedContentMustBeProvide),
             (_ => encodingTableElements is not null && encodingTableElements.Any(), EncodingTableErrors.EncodingTableElementsMustBeProvideOrNotBeNull)
         )
-        .Map(_ => new EncodingTable(new EncodingTableId(), encodedContent, encodedContentBytes, encodingAlgorithmId, encodingLanguageId, encodingTableElements));
+        .Map(_ => new EncodingTable(new EncodingTableId(), encodedContentBytes, encodingAlgorithmId, encodingLanguageId, encodingTableElements));
 }
 
 public sealed class EncodingTableId : TypeId

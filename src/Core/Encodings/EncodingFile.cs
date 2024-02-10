@@ -17,16 +17,18 @@ public sealed class EncodingFile : Entity<EncodingFileId>
         Guid encodingTableId,
         string filePath,
         string fileName,
-        string fileUnitsOfMeasurement,
+        string encodedFileUnitsOfMeasurement,
+        string defaultFileUnitsOfMeasurement,
         string contentType,
-        byte encodedSize,
-        byte defaultSize
+        double encodedSize,
+        double defaultSize
     ) : base(id)
     {
         EncodingTableId = encodingTableId;
         FilePath = filePath;
         FileName = fileName;
-        FileUnitsOfMeasurement = fileUnitsOfMeasurement;
+        EncodedFileUnitsOfMeasurement = encodedFileUnitsOfMeasurement;
+        DefaultFileUnitsOfMeasurement = defaultFileUnitsOfMeasurement;
         ContentType = contentType;
         EncodedSize = encodedSize;
         DefaultSize = defaultSize;
@@ -36,13 +38,15 @@ public sealed class EncodingFile : Entity<EncodingFileId>
 
     public string FileName { get; }
 
-    public string FileUnitsOfMeasurement { get; }
+    public string EncodedFileUnitsOfMeasurement { get; }
+
+    public string DefaultFileUnitsOfMeasurement { get; }
 
     public string ContentType { get; }
 
-    public byte EncodedSize { get; }
+    public double EncodedSize { get; }
 
-    public byte DefaultSize { get; }
+    public double DefaultSize { get; }
 
     public Guid EncodingTableId { get; }
 
@@ -50,20 +54,22 @@ public sealed class EncodingFile : Entity<EncodingFileId>
         Guid encodingTableId,
         string filePath,
         string fileName,
-        string fileUnitsOfMeasurement,
+        string encodedFileUnitsOfMeasurement,
+        string defaultFileUnitsOfMeasurement,
         string contentType,
-        byte encodedSize,
-        byte defaultSize
+        double encodedSize,
+        double defaultSize
     ) =>
         Result.Ensure(
             (encodingTableId, filePath, contentType, fileName),
             (_ => encodingTableId != Guid.Empty, EncodingFileErrors.EncodingFileTableIdMustBeProvide),
             (_ => !string.IsNullOrWhiteSpace(filePath), EncodingFileErrors.EncodingFilePathMustBeProvide),
             (_ => !string.IsNullOrWhiteSpace(fileName), EncodingFileErrors.EncodingFileNameMustBeProvide),
-            (_ => !string.IsNullOrWhiteSpace(fileUnitsOfMeasurement), EncodingFileErrors.EncodingFileUnitsOfMeasurementMustBeProvide),
+            (_ => !string.IsNullOrWhiteSpace(encodedFileUnitsOfMeasurement), EncodingFileErrors.EncodingEncodedFileUnitsOfMeasurementMustBeProvide),
+            (_ => !string.IsNullOrWhiteSpace(defaultFileUnitsOfMeasurement), EncodingFileErrors.EncodingDefaultFileUnitsOfMeasurementMustBeProvide),
             (_ => !string.IsNullOrWhiteSpace(contentType), EncodingFileErrors.EncodingFileContentTypeMustBeProvide)
         )
-        .Map(_ => new EncodingFile(new EncodingFileId(), encodingTableId, filePath, fileName, fileUnitsOfMeasurement, contentType, encodedSize, defaultSize));
+        .Map(_ => new EncodingFile(new EncodingFileId(), encodingTableId, filePath, fileName, encodedFileUnitsOfMeasurement, defaultFileUnitsOfMeasurement, contentType, encodedSize, defaultSize));
 }
 
 public sealed class EncodingFileId : TypeId

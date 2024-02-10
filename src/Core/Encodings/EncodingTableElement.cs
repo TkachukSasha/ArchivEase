@@ -1,4 +1,5 @@
 ﻿using SharedKernel.Errors;
+using System.Text.Json.Serialization;
 
 namespace Core.Encodings;
 
@@ -6,6 +7,7 @@ public sealed class EncodingTableElement
 {
     private EncodingTableElement() { }
 
+    [JsonConstructor]
     private EncodingTableElement(
         char symbol,
         string code
@@ -32,5 +34,4 @@ public sealed class EncodingTableElement
 
 public sealed class EncodingTableElements : List<EncodingTableElement>
 {
-
 }

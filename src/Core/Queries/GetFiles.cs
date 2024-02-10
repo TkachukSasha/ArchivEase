@@ -34,7 +34,8 @@ internal sealed class GetFilesQueryHandler : IQueryHandler<GetFilesQuery, Paged<
                                 x.DefaultSize,
                                 x.EncodedSize,
                                 x.FilePath,
-                                x.FileUnitsOfMeasurement
+                                x.EncodedFileUnitsOfMeasurement,
+                                x.DefaultFileUnitsOfMeasurement
                             )
                       );
 

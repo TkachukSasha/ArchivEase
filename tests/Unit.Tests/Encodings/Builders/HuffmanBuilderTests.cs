@@ -10,13 +10,13 @@ public class HuffmanBuilderTests
     internal static string EngMessage => "My name is Sasha";
 
     [Theory]
-    [InlineData("ua-UA")]
-    [InlineData("en-US")]
+    [InlineData("английский (Соединенные Штаты)")]
+    [InlineData("ua (Ukraine)")]
     public void Should_EncodeAndDecode_MessageThatProvided(string languageName)
     {
-        string message = languageName == "ua-UA" ? UkrMessage : EngMessage;
+        string message = languageName == "ua (Ukraine)" ? UkrMessage : EngMessage;
 
-        (string encodedData, EncodingTableElements encodingTableElements) = HuffmanEncodeBuilder
+        (byte[] encodedData, EncodingTableElements encodingTableElements) = HuffmanEncodeBuilder
             .Init()
             .WithContent(message)
             .WithTableElements(null)

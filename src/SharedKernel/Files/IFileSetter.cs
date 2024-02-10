@@ -4,5 +4,5 @@ namespace SharedKernel.Files;
 
 public interface IFileSetter
 {
-    Task<Result<string>> SetFileAsync(Stream stream, string fileName);
+    Task<Result<FileInfoDto>> SetFileAsync(Stream stream, string fileName);
 }

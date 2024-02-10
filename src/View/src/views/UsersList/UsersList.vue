@@ -1,5 +1,6 @@
 <template>
   <div class="users__list-wrapper">
+    <h1 class="users__not-found" v-if="items.length === 0 && loaded">{{ $t('users.not-found') }}</h1>
     <ul class="users__list">
       <li class="users__list-item" v-for="(user, index) in items" :key="index">
         <div class="users__list-item-content">
@@ -22,6 +23,7 @@ import { computed, onMounted, ref } from "vue";
 import Paginator from "@/components/Paginator/Paginator.vue";
 import { useUsers } from "./compositions/users.js";
 
+const loaded = ref(false);
 const currentPage = ref(1);
 const perPage = ref(5);
 const totalElements = ref(0);
@@ -40,20 +42,24 @@ async function onPageChange(page) {
   const totalPages = Math.ceil(totalElements.value / perPage.value);
 
   if (page >= 1 && page <= totalPages) {
-    const { response: fetchedUsers } = await useUsers({
+    const { response: fetchedUsers, loaded } = await useUsers({
       page: page,
       results: perPage.value,
     });
+
+    loaded.value = loaded;
 
     users.value = fetchedUsers._value.items;
   }
 }
 
 onMounted(async () => {
-  const { users: fetchedUsers } = await useUsers({
+  const { users: fetchedUsers, loaded } = await useUsers({
     page: 1,
     results: perPage.value,
   });
+
+  loaded.value = loaded;
 
   users.value = fetchedUsers._value.items;
 

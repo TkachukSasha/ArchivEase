@@ -3,6 +3,11 @@
     margin-bottom: 3vh;
 }
 
+.files__not-found{
+    align-content: center;
+    text-align: center;
+}
+
 .files__list{
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));

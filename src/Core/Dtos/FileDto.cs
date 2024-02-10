@@ -3,17 +3,17 @@
 public record FileDto
 (
     string FileName,
-    byte DefaultSize,
-    byte EncodedSize,
+    double DefaultSize,
+    double EncodedSize,
     string FilePath,
-    string FileUnitsOfMeasurement
+    string EncodedFileUnitsOfMeasurement,
+    string DefaultFileUnitsOfMeasurement
 );
 
 public record FileEntryDto
 (
-    string FileName,
-    string ContentType,
-    long FileLength,
-    byte DefaultSize,
-    Stream Stream
+     string FileName,
+     string ContentType,
+     long Length,
+     Stream Stream
 );

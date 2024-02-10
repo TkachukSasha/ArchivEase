@@ -15,7 +15,7 @@
       </li>
       <li
           class="header__option"
-          v-if="!userStore.isLoggedIn"
+          v-if="!isLoggedIn"
       >
         <RouterLink
             to="/sign-in"
@@ -24,7 +24,7 @@
       </li>
       <li
           class="header__option"
-          v-if="!userStore.isLoggedIn"
+          v-if="!isLoggedIn"
       >
         <RouterLink
             to="/sign-up"
@@ -33,7 +33,7 @@
       </li>
       <li
           class="header__option"
-          v-if="userStore.isLoggedIn"
+          v-if="isLoggedIn"
       >
         <RouterLink
             to="/files"
@@ -42,7 +42,7 @@
       </li>
       <li
           class="header__option"
-          v-if="userStore.isLoggedIn"
+          v-if="isLoggedIn && isAdmin"
       >
         <RouterLink
             to="/users"
@@ -51,7 +51,7 @@
       </li>
       <li
           class="header__option"
-          v-if="userStore.isLoggedIn"
+          v-if="isLoggedIn"
       >
         <RouterLink
             to="/"
@@ -70,13 +70,14 @@
 <script setup>
 import { ref } from "vue";
 import LanguageSelector from "@/components/LanguagesSelector/LanguagesSelector.vue";
-import { useUserStore } from '@/stores/user.js';
 import { useRouter } from 'vue-router';
 import Cookies from 'js-cookie';
+import {eventBus} from "@/eventBus.js";
 
 const router = useRouter();
-const userStore = useUserStore();
 
+const isLoggedIn = ref(!!JSON.parse(window.localStorage.getItem('authState'))?.isLoggedIn);
+const isAdmin = ref(!!JSON.parse(window.localStorage.getItem('authState'))?.isAdmin);
 const headerOptionsHeight = ref('0px');
 const isToggle = ref(false);
 
@@ -89,10 +90,18 @@ function toggleHeaderMenu() {
   isToggle.value = !isToggle.value;
 }
 
-function logOut(){
-  userStore.resetUser();
+async function logOut() {
+  window.localStorage.removeItem('isLoggedIn');
+
+  isLoggedIn.value = false;
+
   Cookies.remove('jwt');
 }
+
+eventBus.on('authStateChanged', (newAuthState) => {
+  isLoggedIn.value = newAuthState.isLoggedIn;
+  isAdmin.value = newAuthState.isAdmin;
+});
 </script>
 
 <style scoped>

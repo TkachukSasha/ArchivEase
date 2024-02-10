@@ -8,6 +8,7 @@ namespace Core.Dal.Configurations;
 internal sealed class EncodingConfigurations :
     IEntityTypeConfiguration<EncodingTable>,
     IEntityTypeConfiguration<EncodingFile>,
+    IEntityTypeConfiguration<EncodingTraining>,
     IEntityTypeConfiguration<EncodingLanguage>,
     IEntityTypeConfiguration<EncodingAlgorithm>
 {
@@ -19,6 +20,12 @@ internal sealed class EncodingConfigurations :
 
         builder.Property(x => x.Id)
             .HasConversion(x => x.Value, x => new EncodingTableId(x));
+
+        builder.Property(x => x.EncodingLanguageId)
+            .HasComment("not always predicted");
+
+        builder.Property(x => x.EncodingAlgorithmId)
+            .IsRequired();
 
         builder.OwnsMany(x => x.EncodingTableElements)
             .ToJson();
@@ -41,8 +48,11 @@ internal sealed class EncodingConfigurations :
         builder.Property(x => x.FilePath)
             .IsRequired();
 
-        builder.Property(x => x.FileUnitsOfMeasurement)
+        builder.Property(x => x.EncodedFileUnitsOfMeasurement)
             .IsRequired();
+
+        builder.Property(x => x.DefaultFileUnitsOfMeasurement)
+          .IsRequired();
 
         builder.Property(x => x.ContentType)
             .IsRequired();
@@ -54,7 +64,29 @@ internal sealed class EncodingConfigurations :
             .IsRequired();
 
         builder.Property(x => x.EncodingTableId)
+            .HasColumnName("EncodingTableId")
             .IsRequired();
+    }
+
+    public void Configure(EntityTypeBuilder<EncodingTraining> builder)
+    {
+        builder.ToTable("encoding_trainings");
+
+        builder.HasKey(x => x.Id);
+
+        builder.Property(x => x.Id)
+            .HasConversion(x => x.Value, x => new EncodingTrainingId(x));
+
+        builder.Property(x => x.Content)
+            .IsRequired();
+
+        builder.Property(x => x.Language)
+            .IsRequired();
+
+        builder.Property(x => x.Algorithm)
+            .IsRequired();
+
+        builder.HasIndex(x => x.Algorithm, "idx_encoding_trainings_algorithm");
     }
 
     public void Configure(EntityTypeBuilder<EncodingLanguage> builder)

@@ -4,7 +4,7 @@ namespace SharedKernel.Files;
 
 public interface IFileGetter
 {
-    Task<Result> GetFileBytesAsync(string fileName);
+    Task<Result<FileResponse>> GetFileBytesAsync(string fileName);
 
-    string GetFileUnitsOfMeasurement(long length);
+    (double, string) GetFileSizeUnitsOfMeasurement(long length);
 }

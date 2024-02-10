@@ -16,5 +16,5 @@ export async function useFiles({ page, results }) {
         loaded.value = true;
     }
 
-    return { files };
+    return { files, loaded };
 }
