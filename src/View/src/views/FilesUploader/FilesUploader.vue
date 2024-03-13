@@ -50,13 +50,30 @@ const handleFileUpload = (event) => {
 };
 
 const handleSubmit = async () => {
-  try{
+  try {
     const path = window.location.pathname;
     const key = path.split('/').pop();
 
     const { uploadResponse } = await useFileUploader([...uploadedFiles.value], key);
+
+    // Await the _rawValue Promise to get the Blob object
+    const blob = await uploadResponse._rawValue;
+
+    const blobUrl = window.URL.createObjectURL(blob);
+
+    const downloadLink = document.createElement('a');
+    downloadLink.href = blobUrl;
+    downloadLink.download = 'archive.zip';
+
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+
+    document.body.removeChild(downloadLink);
+    window.URL.revokeObjectURL(blobUrl);
+
+    uploadedFiles.value = [];
   }
-  catch (error){
+  catch (error) {
     console.error('Upload error:', error);
   }
 };

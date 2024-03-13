@@ -43,6 +43,15 @@
     margin: 0;
 }
 
+.files__icons{
+    display: flex;
+    justify-content: space-between;
+}
+
+.files__icons-icon{
+    margin-right: 0.5rem;
+}
+
 @media (max-width: 700px) {
     .files__list-wrapper{
         margin-top: 5vh;

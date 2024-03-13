@@ -16,7 +16,7 @@ public class ShannonFanoBuilderTests
     {
         string message = languageName == "ua (Ukraine)" ? UkrMessage : EngMessage;
 
-        (byte[] encodedData, EncodingTableElements encodingTableElements) = ShannonFanoEncodeBuilder
+        (byte[] encodedData, EncodingTableElements encodingTableElements, Guid languageId, Guid _) = ShannonFanoEncodeBuilder
             .Init()
             .WithContent(message)
             .WithTableElements(null)
@@ -27,6 +27,7 @@ public class ShannonFanoBuilderTests
             .Init()
             .WithContent(encodedData)
             .WithTableElements(encodingTableElements)
+            .WithLanguage(EncodingLanguage.FromValue(languageId)!.Name)
             .PrepareContent()
             .Build();
 

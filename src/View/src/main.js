@@ -5,7 +5,7 @@ import { createPinia } from 'pinia'
 import { createI18n } from 'vue-i18n'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { faUserSecret, faBars, faDownload, faChevronLeft, faChevronRight, faTrashCan  } from '@fortawesome/free-solid-svg-icons';
+import { faUserSecret, faBars, faDownload, faChevronLeft, faChevronRight, faTrashCan, faFileImport  } from '@fortawesome/free-solid-svg-icons';
 
 import App from './App.vue'
 import router from './router'
@@ -19,7 +19,7 @@ const i18n = createI18n({
     messages
 });
 
-library.add(faUserSecret, faBars, faDownload, faChevronLeft, faChevronRight, faTrashCan);
+library.add(faUserSecret, faBars, faDownload, faChevronLeft, faChevronRight, faTrashCan, faFileImport);
 
 const app = createApp(App);
 

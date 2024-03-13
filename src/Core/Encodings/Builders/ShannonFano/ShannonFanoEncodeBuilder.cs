@@ -7,6 +7,7 @@ namespace Core.Encodings.Builders.ShannonFano;
 public sealed class ShannonFanoEncodeBuilder
     :
     BaseEncodeBuilder<ShannonFanoEncodeBuilder, string, EncodingTableElements>,
+    IDisposable,
     IEncodeBuilder
     <
         ShannonFanoEncodeBuilder,
@@ -29,6 +30,12 @@ public sealed class ShannonFanoEncodeBuilder
         return this;
     }
 
+    public ShannonFanoEncodeBuilder WithLanguage(string language)
+    {
+        Language = language;
+        return this;
+    }
+
     public ShannonFanoEncodeBuilder PrepareContent()
     {
         if (!IsContentNotNullOrWhiteSpace())
@@ -43,7 +50,7 @@ public sealed class ShannonFanoEncodeBuilder
         return this;
     }
 
-    public (byte[], EncodingTableElements) Build()
+    public (byte[], EncodingTableElements, Guid, Guid) Build()
     {
         var codes = EncodingTableElements!.ToDictionary(element => element.Symbol, element => element.Code);
 
@@ -54,7 +61,7 @@ public sealed class ShannonFanoEncodeBuilder
 
         byte[] encodedBytes = ConvertChunksToByteArray(response.ToString());
 
-        return (encodedBytes.ToArray()!, EncodingTableElements!);
+        return (encodedBytes.ToArray()!, EncodingTableElements!, EncodingLanguage.FromName(Language)!.Value, EncodingAlgorithm.ShannonFanoAlgorithm.Value);
     }
 
     #region local
@@ -95,43 +102,52 @@ public sealed class ShannonFanoEncodeBuilder
     {
         if (codes.Count < 2) return;
 
-        int divider = BestPosition();
+        int totalFrequency = codes.Sum(code => code.Frequency);
+        int leftFrequency = 0;
 
+        // Find the best split position
+        int bestPosition = FindBestSplitPosition(codes, totalFrequency, ref leftFrequency);
+
+        // Assign codes based on the split position
         for (int i = 0; i < codes.Count; i++)
         {
-            codes[i].Bits <<= 1;
+            // Increase code size for each symbol
             codes[i].Size++;
 
-            if (i >= divider)
-                codes[i].Bits |= 1;
-        }
-
-        AssignCodes(codes.GetRange(0, divider));
-        AssignCodes(codes.GetRange(divider, codes.Count - divider));
-
-        int BestPosition()
-        {
-            int total = codes.Sum(code => code.Frequency);
-            int left = codes[0].Frequency;
-
-            int bestPosition = 0;
-            int previousDiff = int.MaxValue;
-
-            for (int i = 0; i < codes.Count - 1; i++)
+            // Assign the bit based on the split position
+            if (i < bestPosition)
+                codes[i].Bits <<= 1; // Move the bit to the left
+            else
             {
-                int right = total - left;
-
-                int diff = Math.Abs(right - left);
-
-                if (diff >= previousDiff)
-                    break;
-
-                previousDiff = diff;
-                bestPosition = i + 1;
+                codes[i].Bits <<= 1;
+                codes[i].Bits |= 1; // Set the least significant bit to 1
             }
-
-            return bestPosition;
         }
+
+        // Recursively assign codes to the left and right partitions
+        AssignCodes(codes.GetRange(0, bestPosition));
+        AssignCodes(codes.GetRange(bestPosition, codes.Count - bestPosition));
+    }
+
+    private int FindBestSplitPosition(List<SymbolStatistic> codes, int totalFrequency, ref int leftFrequency)
+    {
+        int bestPosition = 0;
+        int previousDiff = int.MaxValue;
+
+        for (int i = 0; i < codes.Count - 1; i++)
+        {
+            int rightFrequency = totalFrequency - leftFrequency;
+            int diff = Math.Abs(rightFrequency - leftFrequency);
+
+            if (diff >= previousDiff)
+                break;
+
+            previousDiff = diff;
+            bestPosition = i + 1;
+            leftFrequency += codes[i].Frequency;
+        }
+
+        return bestPosition;
     }
     #endregion
 }

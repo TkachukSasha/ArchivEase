@@ -1,9 +1,0 @@
-version: '3.4'
-
-services:
-  archiv_ease_api:
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_HTTP_PORTS=5000
-    ports:
-      - "5000"

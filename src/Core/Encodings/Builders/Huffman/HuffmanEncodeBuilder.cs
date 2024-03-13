@@ -29,6 +29,12 @@ public sealed class HuffmanEncodeBuilder
         return this;
     }
 
+    public HuffmanEncodeBuilder WithLanguage(string language)
+    {
+        Language = language;
+        return this;
+    }
+
     public HuffmanEncodeBuilder PrepareContent()
     {
         if (string.IsNullOrWhiteSpace(Content))
@@ -41,7 +47,7 @@ public sealed class HuffmanEncodeBuilder
         return this;
     }
 
-    public (byte[], EncodingTableElements) Build()
+    public (byte[], EncodingTableElements, Guid, Guid) Build()
     {
         var codes = EncodingTableElements!.ToDictionary(element => element.Symbol, element => element.Code);
 
@@ -57,7 +63,7 @@ public sealed class HuffmanEncodeBuilder
 
         byte[] encodedBytes = ConvertChunksToByteArray(response.ToString());
 
-        return (encodedBytes.ToArray()!, EncodingTableElements!);
+        return (encodedBytes.ToArray()!, EncodingTableElements!, EncodingLanguage.FromName(Language)!.Value, EncodingAlgorithm.HuffmanAlgorithm.Value);
     }
 
     #region local
@@ -73,7 +79,7 @@ public sealed class HuffmanEncodeBuilder
 
         while (nodes.Count > 1)
         {
-            nodes = nodes.OrderByDescending(node => node.Frequency).ToList();
+            nodes = nodes.OrderBy(node => node.Frequency).ToList();
 
             var left = nodes[0];
             var right = nodes[1];

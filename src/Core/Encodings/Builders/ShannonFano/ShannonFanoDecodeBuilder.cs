@@ -31,6 +31,12 @@ public sealed class ShannonFanoDecodeBuilder
         return this;
     }
 
+    public ShannonFanoDecodeBuilder WithLanguage(string language)
+    {
+        Language = language;
+        return this;
+    }
+
     public ShannonFanoDecodeBuilder PrepareContent()
     {
         if (!IsContentNotNullOrWhiteSpace())

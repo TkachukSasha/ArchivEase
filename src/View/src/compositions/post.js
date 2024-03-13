@@ -54,7 +54,7 @@ export function useUploadFiles(url, options) {
         };
 
         const res = await fetch(url, config);
-        response.value = await res.json();
+        response.value = res.blob();
     }
 
     return { response, request };

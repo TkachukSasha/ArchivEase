@@ -6,6 +6,7 @@ using SharedKernel.Authentication;
 using SharedKernel.Dispatchers;
 using Core.Commands;
 using Core.Dtos;
+using SharedKernel.Files;
 
 namespace Api.Controllers;
 
@@ -13,31 +14,67 @@ namespace Api.Controllers;
 [Route("api/files")]
 public class FilesController : BaseController
 {
+    private readonly IFileGetter _fileGetter;
+
     public FilesController
     (
-        IDispatcher dispatcher
+        IDispatcher dispatcher,
+        IFileGetter fileGetter
     ) : base(dispatcher)
     {
+        _fileGetter = fileGetter;
     }
 
+    [Authorization(Permissions.EncodeFiles | Permissions.DecodeFiles)]
     [HttpPost("encode")]
     public async Task<IActionResult> EncodeFilesAsync([FromForm] List<IFormFile> files, CancellationToken cancellationToken)
     {
         var command = new EncodeCommand
-         (
-             files.Select(x => new FileEntryDto(x.FileName, x.ContentType, x.Length, x.OpenReadStream())).ToList()
-         );
+        (
+            files.Select(x => new FileEntryDto(x.FileName, x.ContentType, x.Length, x.OpenReadStream())).ToList()
+        );
 
-        return Ok(await _dispatcher.SendAsync(command, cancellationToken));
+        var result = await _dispatcher.SendAsync(command, cancellationToken);
+
+        return File(result.Value, "application/zip", "archive.zip");
     }
 
-    [HttpPost("encodev2")]
-    public async Task<IActionResult> EncodeAsync([FromBody] EncodeCommand command, CancellationToken cancellationToken)
-        => Ok(await _dispatcher.SendAsync(command, cancellationToken));
+    [Authorization(Permissions.EncodeFiles | Permissions.DecodeFiles)]
+    [HttpPost("decode")]
+    public async Task<IActionResult> DecodeAsync([FromForm] List<IFormFile> files, CancellationToken cancellationToken)
+    {
+        var command = new DecodeCommand
+        (
+            files.Select(x => new FileEntryDto(x.FileName, x.ContentType, x.Length, x.OpenReadStream())).ToList()
+        );
 
-    [HttpPost("decodev2")]
-    public async Task<IActionResult> DecodeAsync([FromBody] DecodeCommand command, CancellationToken cancellationToken)
-    => Ok(await _dispatcher.SendAsync(command, cancellationToken));
+        var result = await _dispatcher.SendAsync(command, cancellationToken);
+
+        return File(result.Value, "application/zip", "archive.zip");
+    }
+
+    [Authorization(Permissions.DecodeFiles)]
+    [HttpPost("decode/{fileName}")]
+    public async Task<IActionResult> DecodeAsync(string fileName, CancellationToken cancellationToken)
+    {
+        var command = new DecodeByFileNameCommand
+        (
+            fileName
+        );
+
+        var result = await _dispatcher.SendAsync(command, cancellationToken);
+
+        return File(result.Value, "application/zip", "archive.zip");
+    }
+
+    [Authorization(Permissions.ViewFiles)]
+    [HttpGet("download/{fileName}")]
+    public async Task<IActionResult> DownloadFileAsync(string fileName)
+    {
+        var result = await _fileGetter.GetFileBytesAsync(fileName);
+
+        return File(result.Value.Bytes, result.Value.ContentType, fileName);
+    }
 
     [Authorization(Permissions.ViewFiles)]
     [HttpGet]

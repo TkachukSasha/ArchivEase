@@ -89,7 +89,7 @@ public class VariableLengthBuilderTests
         string message = languageName == EncodingLanguage.Ukrainian.Name ? UkrMessage : EngMessage;
         EncodingTableElements tableElements = languageName == EncodingLanguage.Ukrainian.Name ? UkrainianTableElements : EnglishTableElements;
 
-        byte[] encodedData = VariableLengthCodeEncodeBuilder
+        (byte[] encodedData, EncodingTableElements _, Guid languageId, Guid _) = VariableLengthCodeEncodeBuilder
             .Init()
             .WithContent(message)
             .WithTableElements(tableElements)
@@ -100,6 +100,7 @@ public class VariableLengthBuilderTests
             .Init()
             .WithContent(encodedData)
             .WithTableElements(tableElements)
+            .WithLanguage(EncodingLanguage.FromValue(languageId)!.Name)
             .PrepareContent()
             .Build();
 

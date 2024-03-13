@@ -1,6 +1,11 @@
-﻿using SharedKernel.Abstractions;
+﻿using CsvHelper.Configuration;
+using CsvHelper;
+using SharedKernel.Abstractions;
 using SharedKernel.Errors;
+using System.Globalization;
 using System.Text;
+using Microsoft.ML;
+using Microsoft.ML.Data;
 
 namespace Core.Encodings;
 
@@ -120,9 +125,8 @@ public sealed class EncodingTraining : Entity<EncodingTrainingId>
     )
     {
         Random random = new Random();
-
         EncodingTableElements encodingTableElements = language == EncodingLanguage.Ukrainian.Name ? UkrainianTableElements
-                                                                                                  : EnglishTableElements;                                        
+                                                                                                  : EnglishTableElements;
 
         for (int i = 1; i <= count; i++)
             yield return Init
@@ -144,6 +148,99 @@ public sealed class EncodingTraining : Entity<EncodingTrainingId>
         }
 
         return text.ToString();
+    }
+
+    public static IEnumerable<EncodingTraining> GenerateTextFilesContent(string language, int count)
+    {
+        Random random = new Random();
+
+        string[] englishWords = { "this", "text", "is", "randomly", "generated", "in", "C#", "for", "example", "and", "demonstration", "purposes", "to", "illustrate", "word", "usage" };
+        string[] ukrainianWords = { "цей", "текст", "генерується", "випадково", "на", "C#", "з", "метою", "прикладу", "та", "демонстрації", "для", "ілюстрації", "використання", "слів" };
+
+        string[] words = language == EncodingLanguage.Ukrainian.Name ? ukrainianWords 
+                                                                     : englishWords;
+
+        int numberOfSentences = 5;
+
+        int wordLength = count;
+
+        for (int i = 1; i <= count; i++)
+        {
+            string content;
+            string algorithm;
+
+            if (random.Next(2) == 0)
+            {
+                content = GenerateShannonFanoFriendlyText(random, words, wordLength, numberOfSentences);
+                algorithm = EncodingAlgorithm.ShannonFanoAlgorithm.Name;
+            }
+            else
+            {
+                content = GenerateRandomText(random, words, wordLength, numberOfSentences);
+                algorithm = EncodingAlgorithm.HuffmanAlgorithm.Name;
+            }
+
+            yield return Init(content, language, algorithm).Value;
+        }
+    }
+
+    private static string GenerateShannonFanoFriendlyText(Random random, string[] words, int length, int numberOfSentences)
+    {
+        StringBuilder textBuilder = new StringBuilder();
+
+        int distinctSymbolCount = Math.Min(length, words.Length);
+        List<string> distinctSymbols = words.Take(distinctSymbolCount).ToList();
+
+        Shuffle(distinctSymbols, random);
+
+        for (int i = 0; i < numberOfSentences; i++)
+        {
+            int wordsInSentence = random.Next((int)(length * 0.8), (int)(length * 1.2));
+
+            for (int j = 0; j < wordsInSentence; j++)
+            {
+                int randomIndex = random.Next(distinctSymbols.Count);
+                textBuilder.Append(distinctSymbols[randomIndex] + " ");
+            }
+
+            textBuilder.Append(". ");
+        }
+
+        return textBuilder.ToString().Trim();
+    }
+
+    private static string GenerateRandomText(Random random, string[] words, int length, int numberOfSentences)
+    {
+        StringBuilder textBuilder = new StringBuilder();
+
+        for (int i = 0; i < numberOfSentences; i++)
+        {
+            int wordsInSentence = random.Next((int)(length * 0.8), (int)(length * 1.2));
+
+            for (int j = 0; j < wordsInSentence; j++)
+            {
+                int randomIndex = random.Next(words.Length);
+                textBuilder.Append(words[randomIndex] + " ");
+            }
+
+            textBuilder.Append(". ");
+        }
+
+        return textBuilder.ToString().Trim();
+    }
+
+    private static void Shuffle<T>(IList<T> list, Random random)
+    {
+        int n = list.Count;
+
+        while (n > 1)
+        {
+            n--;
+            int k = random.Next(n + 1);
+            T value = list[k];
+            list[k] = list[n];
+            list[n] = value;
+        }
     }
 }
 

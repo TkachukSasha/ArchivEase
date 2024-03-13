@@ -1,11 +1,13 @@
-﻿using Core.Dal;
+﻿using Core.Commands.Base;
+using Core.Dal;
 using Core.Dtos;
 using Core.Encodings;
-using Core.Encodings.Builders.Huffman;
+using Core.Encodings.Builders.ShannonFano;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel.Commands;
 using SharedKernel.Errors;
 using SharedKernel.Files;
+using System.IO.Compression;
 using System.Text;
 
 namespace Core.Commands;
@@ -13,11 +15,11 @@ namespace Core.Commands;
 public sealed record EncodeCommand
 (
    List<FileEntryDto> FileEntries
-) : ICommand<Result>;
+) : ICommand<Result<byte[]>>;
 
-internal sealed class EncodeCommandHandler : ICommandHandler<EncodeCommand, Result>
+internal sealed class EncodeCommandHandler : BaseEncoding, ICommandHandler<EncodeCommand, Result<byte[]>>
 {
-    private readonly ArchivEaseContext _context;
+    private static object _lock = new object();
     private readonly IFileSetter _fileSetter;
     private readonly IFileGetter _fileGetter;
 
@@ -25,90 +27,109 @@ internal sealed class EncodeCommandHandler : ICommandHandler<EncodeCommand, Resu
     (
         ArchivEaseContext context,
         IFileSetter fileSetter,
-        IFileGetter fileGetter
-    )
+        IFileGetter fileGetter,
+        EncodingAnalyzer analyzer
+    ) : base(context, analyzer)
     {
-        _context = context;
         _fileSetter = fileSetter;
         _fileGetter = fileGetter;
     }
 
-    public async Task<Result> HandleAsync(EncodeCommand command, CancellationToken cancellationToken = default)
+    public async Task<Result<byte[]>> HandleAsync(EncodeCommand command, CancellationToken cancellationToken = default)
     {
-        List<EncodingTable> _encodingTables = new();
+        Dictionary<string, byte[]> encodedContentResult = [];
 
-        List<EncodingFile> _encodingFiles = new();
+        List<EncodingTable> _encodingTables = [];
 
-        // check that the file already exists
+        List<EncodingFile> _encodingFiles = [];
+
         List<string> fileNames = command.FileEntries.Select(x => x.FileName).ToList();
 
-        List<EncodingFile> existingFiles = await _context
-            .EncodingFiles
-            .AsNoTracking()
-            .Where(x => fileNames.Contains(x.FileName))
-            .ToListAsync(cancellationToken);
+        (List<EncodingFile> existingFiles, List<EncodingTable> existingTables) = await GetEncodingRelatedDataAsync(fileNames);
 
-        // send to ml request to predict algo
-        string predictedAlgorithm = EncodingAlgorithm.HuffmanAlgorithm.Name;
-
-        // encode by algo && add to result list
         foreach (var fileEntry in command.FileEntries)
         {
-            if (existingFiles.FirstOrDefault(x => x.FileName == fileEntry.FileName) is not null)
+            EncodingFile? existingFile = existingFiles.FirstOrDefault(x => x.FileName == fileEntry.FileName);
+
+            if (existingFile is not null)
             {
-                // get from storage && add to result
+                EncodingTable? existingTable = existingTables.FirstOrDefault(x => x.Id == existingFile.EncodingTableId);
+
+                if (existingTable is not null)
+                {
+                    encodedContentResult.Add(existingFile.FileName, existingTable.EncodedContentBytes);
+                }
 
                 continue;
             }
 
-            string content;
+            (byte[] encodedData, EncodingTableElements? encodingTableElements, Guid languageId, Guid algorithmId) = await EncodeFileAsync(fileEntry.Stream);
 
-            using (var reader = new StreamReader(fileEntry.Stream, Encoding.UTF8))
+            Result<FileInfoDto> fileInfo = await SaveEncodedFileAsync(encodedData, fileEntry.FileName);
+
+            lock (_lock)
             {
-                content = await reader.ReadToEndAsync();
+                SetEntities(fileEntry, fileInfo.Value, encodedData, encodingTableElements, _encodingTables, _encodingFiles, languageId, algorithmId);
 
-                (byte[] encodedData, EncodingTableElements encodingTableElements) = HuffmanEncodeBuilder
-                    .Init()
-                    .WithContent(content)
-                    .WithTableElements(null)
-                    .PrepareContent()
-                    .Build();
-
-                (double fileLength, string unitsOfMeasurement) = _fileGetter.GetFileSizeUnitsOfMeasurement(fileEntry.Length);
-
-                using (var encodedStream = new MemoryStream(encodedData))
-                {
-                    Result<FileInfoDto> fileInfo = await _fileSetter.SetFileAsync(encodedStream, fileEntry.FileName);
-
-                    (double encodedFileLength, string encodedUnitsOfMeasurement) = _fileGetter.GetFileSizeUnitsOfMeasurement(fileInfo.Value.FileLength);
-
-                    EncodingTable encodingTable = EncodingTable.Init(encodedData, EncodingAlgorithm.HuffmanAlgorithm.Value, null, encodingTableElements).Value;
-
-                    EncodingFile encodingFile = EncodingFile.Init(encodingTable.Id, fileInfo.Value.FilePath, fileEntry.FileName, encodedUnitsOfMeasurement, unitsOfMeasurement, fileEntry.ContentType, encodedFileLength, fileLength).Value;
-
-                    _encodingTables.Add(encodingTable);
-                    _encodingFiles.Add(encodingFile);
-                }
+                encodedContentResult.Add(fileEntry.FileName, encodedData);
             }
         }
 
-        // zip result list
+        _context.EncodingTables.AddRange(_encodingTables);
 
-        #region commented
+        _context.EncodingFiles.AddRange(_encodingFiles);
 
-        //if (command.Algorithm == variableLength)
-        //{
-        //    return Result.Success(VariableLengthEncodeAlgorithm(command.Text, command.Language));
-        //}
+        return await ZipResult(encodedContentResult);
+    }
 
-        //if(command.Algorithm == shannonFano || command.Algorithm == huffman)
-        //{
-        //    return Result.Success(SharedAlgorithm(command.Text, command.Algorithm == shannonFano));
-        //}
+    private async Task<Result<FileInfoDto>> SaveEncodedFileAsync
+    (
+        byte[] encodedData,
+        string fileName
+    )
+    {
+        using (var encodedStream = new MemoryStream(encodedData))
+        {
+            return await _fileSetter.SetFileAsync(encodedStream, fileName);
+        }
+    }
 
-        #endregion
+    private void SetEntities
+    (
+        FileEntryDto fileEntry,
+        FileInfoDto fileInfo,
+        byte[] encodedData,
+        EncodingTableElements encodingTableElements,
+        List<EncodingTable> encodingTables,
+        List<EncodingFile> encodingFiles,
+        Guid languageId,
+        Guid algorithmId
+    )
+    {
+        (double fileLength, string unitsOfMeasurement) = FileExtensions.GetFileSizeUnitsOfMeasurement(fileEntry.Length);
 
-        return Result.Success();
+        EncodingTable encodingTable = EncodingTable.Init
+        (
+            encodedData,
+            languageId,
+            algorithmId,
+            encodingTableElements
+        ).Value;
+
+        EncodingFile encodingFile = EncodingFile.Init
+        (
+            encodingTable.Id,
+            fileInfo.FilePath,
+            fileEntry.FileName,
+            fileInfo.EncodedUnitsOfMeasurement,
+            unitsOfMeasurement,
+            fileEntry.ContentType,
+            fileInfo.FileLength,
+            fileLength
+        ).Value;
+
+        encodingTables.Add(encodingTable);
+        encodingFiles.Add(encodingFile);
     }
 }
 

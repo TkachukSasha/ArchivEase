@@ -36,7 +36,16 @@ internal sealed class EncodingsInitializer : BaseInitializer<ArchivEaseContext, 
         IEnumerable<EncodingTraining> variableLengthEncodingUkrainianDataSet = EncodingTraining
            .GenerateTextFilesContentVariableLengthEncoding(UkrainianLanguage, VariableLengthEncoding, 1000);
 
-        IEnumerable<EncodingTraining> variableLengthEncodingDataSetItems = variableLengthEncodingEnglishDataSet.Union(variableLengthEncodingUkrainianDataSet);
+        IEnumerable<EncodingTraining> algorithmDataSetEnglish = EncodingTraining
+            .GenerateTextFilesContent(EnglishLanguage, 1000);
+
+        IEnumerable<EncodingTraining> algorithmDataSetUkrainian = EncodingTraining
+            .GenerateTextFilesContent(UkrainianLanguage, 1000);
+
+        IEnumerable<EncodingTraining> variableLengthEncodingDataSetItems = variableLengthEncodingEnglishDataSet
+            .Union(variableLengthEncodingUkrainianDataSet)
+            .Union(algorithmDataSetEnglish)
+            .Union(algorithmDataSetUkrainian);
 
         await _context.EncodingTrainings.AddRangeAsync(variableLengthEncodingDataSetItems);
 

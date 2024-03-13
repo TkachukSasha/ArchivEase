@@ -9,5 +9,6 @@ export const userEndpoints = {
 export const fileEndpoints = {
     default: `${API_BASE_URL}/files`,
     encode: `${API_BASE_URL}/files/encode`,
-    decode: `${API_BASE_URL}/files/decode`
+    decode: `${API_BASE_URL}/files/decode`,
+    download: `${API_BASE_URL}/files/download`
 }

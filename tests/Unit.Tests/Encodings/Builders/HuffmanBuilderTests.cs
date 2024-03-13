@@ -16,7 +16,7 @@ public class HuffmanBuilderTests
     {
         string message = languageName == "ua (Ukraine)" ? UkrMessage : EngMessage;
 
-        (byte[] encodedData, EncodingTableElements encodingTableElements) = HuffmanEncodeBuilder
+        (byte[] encodedData, EncodingTableElements encodingTableElements, Guid languageId, Guid _) = HuffmanEncodeBuilder
             .Init()
             .WithContent(message)
             .WithTableElements(null)
@@ -27,6 +27,7 @@ public class HuffmanBuilderTests
             .Init()
             .WithContent(encodedData)
             .WithTableElements(encodingTableElements)
+            .WithLanguage(EncodingLanguage.FromValue(languageId)!.Name)
             .PrepareContent()
             .Build();
 

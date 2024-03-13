@@ -26,6 +26,12 @@ public sealed class VariableLengthCodeEncodeBuilder
         return this;
     }
 
+    public VariableLengthCodeEncodeBuilder WithLanguage(string language)
+    {
+        Language = language;
+        return this;
+    }
+
     public VariableLengthCodeEncodeBuilder PrepareContent()
     {
         if (!IsContentNotNullOrWhiteSpace())
@@ -36,9 +42,9 @@ public sealed class VariableLengthCodeEncodeBuilder
         return this;
     }
 
-    public byte[] Build()
-        => IsContentNotNullOrWhiteSpace() && IsEncodingTableElementsProvided() ? Encode(8)
-                                                                               : Array.Empty<byte>();
+    public (byte[], EncodingTableElements, Guid, Guid) Build()
+        => IsContentNotNullOrWhiteSpace() && IsEncodingTableElementsProvided() ? (Encode(), null, EncodingLanguage.FromName(Language).Value, EncodingAlgorithm.VariableLengthCodeAlgorithm.Value)
+                                                                               : (Array.Empty<byte>(), null, Guid.Empty, EncodingAlgorithm.VariableLengthCodeAlgorithm.Value);
 
     #region local
     private void TranformContent()
@@ -60,7 +66,7 @@ public sealed class VariableLengthCodeEncodeBuilder
         Content = response.ToString();
     }
 
-    private byte[] Encode(int chunkSize)
+    private byte[] Encode()
     {
         var response = new StringBuilder(Content!.Length);
 

@@ -1,4 +1,5 @@
 ﻿using Core.Dal;
+using Core.Encodings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SharedKernel.Authentication;
@@ -27,6 +28,8 @@ public static class DependencyInjection
         services.AddDispatchers();
 
         services.AddInMemoryCaching();
+
+        services.AddSingleton<EncodingAnalyzer>();
 
         services.AddDataLayer(configuration.GetConnectionString("Default")!);
 

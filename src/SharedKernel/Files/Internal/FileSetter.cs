@@ -1,4 +1,5 @@
 ﻿using SharedKernel.Errors;
+using System.IO;
 
 namespace SharedKernel.Files.Internal;
 
@@ -22,10 +23,13 @@ internal sealed class FileSetter : IFileSetter
 
         var fileLength = new FileInfo(filePath).Length;
 
+        (double encodedFileLength, string encodedUnitsOfMeasurement) = FileExtensions.GetFileSizeUnitsOfMeasurement(fileLength);
+
         return Result.Success(new FileInfoDto
         {
-            FileLength = fileLength,
-            FilePath = filePath
+            FileLength = encodedFileLength,
+            FilePath = filePath,
+            EncodedUnitsOfMeasurement = encodedUnitsOfMeasurement
         });
     }
 }

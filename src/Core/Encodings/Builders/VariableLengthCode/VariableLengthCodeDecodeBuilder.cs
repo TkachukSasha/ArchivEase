@@ -37,6 +37,12 @@ public sealed class VariableLengthCodeDecodeBuilder
         return this;
     }
 
+    public VariableLengthCodeDecodeBuilder WithLanguage(string language)
+    {
+        Language = language;
+        return this;
+    }
+
     public string Build()
         => _content!;
 

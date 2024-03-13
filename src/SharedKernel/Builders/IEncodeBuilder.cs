@@ -6,5 +6,7 @@ public interface IEncodeBuilder<TEncoder, TTableElements, TContent>
 
     TEncoder WithTableElements(TTableElements? tableElements);
 
+    TEncoder WithLanguage(string language);
+
     TEncoder PrepareContent();
 }

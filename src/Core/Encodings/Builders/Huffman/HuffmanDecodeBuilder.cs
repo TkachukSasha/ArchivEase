@@ -31,6 +31,13 @@ public sealed class HuffmanDecodeBuilder
         return this;
     }
 
+    public HuffmanDecodeBuilder WithLanguage(string language)
+    {
+        Language = language;
+        return this;
+    }
+
+
     public HuffmanDecodeBuilder PrepareContent()
     {
         if (!IsContentNotNullOrWhiteSpace())

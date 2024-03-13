@@ -57,7 +57,7 @@ internal sealed class SignInCommandHandler : ICommandHandler<SignInCommand, Resu
 
         var token = _jwtTokenProvider.CreateToken
         (
-            user.Id.Value.ToString(),
+            user.Id.Value.ToString(), 
             user.UserName,
             permissionValue.ToString()
         );

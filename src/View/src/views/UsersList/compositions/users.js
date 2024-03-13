@@ -9,8 +9,6 @@ export async function useUsers({ page, results }) {
         userEndpoints.default + `?page=${page}&results=${results}`
     );
 
-    let totalItems = 0;
-
     if (!loaded.value) {
         await request();
         loaded.value = true;

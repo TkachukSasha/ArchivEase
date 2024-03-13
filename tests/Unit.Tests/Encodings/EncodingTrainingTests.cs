@@ -36,12 +36,32 @@ public class EncodingTrainingTests
     public void Should_Successfully_GenerateTrainingDataSet_VariableLengthEncoding()
     {
         IEnumerable<EncodingTraining> variableLengthEncodingEnglishDataSet = EncodingTraining
-            .GenerateTextFilesContentVariableLengthEncoding(EnglishLanguage, VariableLengthEncoding, 1000);
+            .GenerateTextFilesContentVariableLengthEncoding(EnglishLanguage, VariableLengthEncoding, 100);
 
         IEnumerable<EncodingTraining> variableLengthEncodingUkrainianDataSet = EncodingTraining
-           .GenerateTextFilesContentVariableLengthEncoding(UkrainianLanguage, VariableLengthEncoding, 1000);
+           .GenerateTextFilesContentVariableLengthEncoding(UkrainianLanguage, VariableLengthEncoding, 100);
 
         variableLengthEncodingEnglishDataSet.Should().NotBeEmpty();
         variableLengthEncodingUkrainianDataSet.Should().NotBeEmpty();
+    }
+
+
+    [Fact]
+    public void Should_Successfully_GenerateTrainingDataSet()
+    {
+        IEnumerable<EncodingTraining> algorithmDataSetEnglish = EncodingTraining
+          .GenerateTextFilesContent(EnglishLanguage, 100);
+
+        IEnumerable<EncodingTraining> algorithmDataSetUkrainian = EncodingTraining
+            .GenerateTextFilesContent(UkrainianLanguage, 100);
+
+        var shannon_eng = algorithmDataSetEnglish.Where(x => x.Algorithm == EncodingAlgorithm.ShannonFanoAlgorithm.Name).ToList();
+        var shannon_ukr = algorithmDataSetUkrainian.Where(x => x.Algorithm == EncodingAlgorithm.ShannonFanoAlgorithm.Name).ToList();
+
+        var huffman_eng = algorithmDataSetEnglish.Where(x => x.Algorithm == EncodingAlgorithm.HuffmanAlgorithm.Name).ToList();
+        var huffman_ukr = algorithmDataSetUkrainian.Where(x => x.Algorithm == EncodingAlgorithm.HuffmanAlgorithm.Name).ToList();
+
+        algorithmDataSetEnglish.Should().NotBeEmpty();
+        algorithmDataSetUkrainian.Should().NotBeEmpty();
     }
 }

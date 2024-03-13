@@ -6,6 +6,8 @@ public interface IDecodeBuilder<TDecoder, TTableElements, TContent, TResponse>
 
     TDecoder WithTableElements(TTableElements encodingTableElements);
 
+    TDecoder WithLanguage(string language);
+
     TDecoder PrepareContent();
 
     TResponse Build();

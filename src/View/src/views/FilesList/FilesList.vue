@@ -1,16 +1,27 @@
 <template>
   <div class="files__list-wrapper">
-    <h1 class="files__not-found" v-if="items.length === 0">{{ $t('files.not-found') }}</h1>
+    <h1 class="files__not-found" v-if="items.length === 0 && loaded">{{ $t('files.not-found') }}</h1>
     <ul class="files__list">
       <li class="files__list-item" v-for="(file, index) in items" :key="index">
         <div class="files__list-item-content">
           <h3 class="files__item-name">{{ file.fileName }}</h3>
 
           <div class="files__item-details">
-            <span class="files__item-size">{{ file.defaultSize }} -> {{ file.encodedSize }}</span>
-            <a :href="file.filePath" class="files__download-link">
-              <font-awesome-icon icon="fa-solid fa-download" />
-            </a>
+            <span class="files__item-size">
+              {{ file.defaultSize.toFixed(2) }}
+              {{ file.defaultFileUnitsOfMeasurement }}
+              ->
+              {{ file.encodedSize.toFixed(2) }}
+              {{ file.encodedFileUnitsOfMeasurement }}
+            </span>
+            <div class="files__icons">
+              <button type="button" class="files__icons-icon" @click="downloadFile(file.fileName, 'decode')">
+                <font-awesome-icon icon="fa-solid fa-file-import" />
+              </button>
+              <button type="button" @click="downloadFile(file.fileName, 'download')">
+                <font-awesome-icon icon="fa-solid fa-download" />
+              </button>
+            </div>
           </div>
         </div>
       </li>
@@ -28,8 +39,7 @@
 <script setup>
 import { computed, onMounted, ref } from "vue";
 import Paginator from "@/components/Paginator/Paginator.vue";
-import { useFiles } from "./compositions/files";
-
+import { useFiles, useFileDownloader } from "./compositions/files";
 const loaded = ref(false);
 const currentPage = ref(1);
 const perPage = ref(5);
@@ -60,15 +70,44 @@ async function onPageChange(page) {
   }
 }
 
+async function downloadFile(fileName, key) {
+  try {
+    const { downloadResponse } = await useFileDownloader(fileName, key);
+
+    // Await the _rawValue Promise to get the Blob object
+    const blob = await downloadResponse._rawValue;
+
+    const blobUrl = window.URL.createObjectURL(blob);
+
+    const downloadLink = document.createElement('a');
+    downloadLink.href = blobUrl;
+
+    if(key === "download"){
+      downloadLink.download = fileName;
+    }
+    else{
+      downloadLink.download = 'archive.zip';
+    }
+
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+
+    document.body.removeChild(downloadLink);
+    window.URL.revokeObjectURL(blobUrl);
+  } catch (error) {
+    console.error('Error downloading file:', error);
+  }
+}
+
 onMounted(async () => {
-  const { response: fetchedFiles, loaded } = await useFiles({
+  const { files: fetchedFiles, loaded } = await useFiles({
     page: 1,
     results: perPage.value,
   });
 
-  files.value = fetchedFiles._value.items;
-
   loaded.value = loaded;
+
+  files.value = fetchedFiles._value.items;
 
   totalElements.value = fetchedFiles._value.totalResults;
 });

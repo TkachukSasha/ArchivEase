@@ -1,39 +1,120 @@
-﻿using Core.Encodings.Builders.VariableLengthCode;
-using Core.Encodings;
-using SharedKernel.Commands;
+﻿using SharedKernel.Commands;
 using SharedKernel.Errors;
+using Core.Dtos;
+using Core.Dal;
+using Core.Encodings;
+using System.Text;
+using Core.Commands.Base;
 
 namespace Core.Commands;
 
 public sealed record DecodeCommand
 (
-    string? Text,
-    byte[] Data,
-    EncodingTableElements EncodingTableElements,
-    string Algorithm
-) : ICommand<Result>;
+    List<FileEntryDto> FileEntries
+) : ICommand<Result<byte[]>>;
 
-internal sealed class DecodeCommandHandler : ICommandHandler<DecodeCommand, Result>
+public sealed record DecodeByFileNameCommand
+(
+    string FileName
+) : ICommand<Result<byte[]>>;
+
+internal sealed class DecodeCommandHandler : BaseEncoding, ICommandHandler<DecodeCommand, Result<byte[]>>
 {
-    public async Task<Result> HandleAsync(DecodeCommand command, CancellationToken cancellationToken = default)
+    public DecodeCommandHandler
+    (
+        ArchivEaseContext context,
+        EncodingAnalyzer analyzer
+    ) : base (context, analyzer)    
     {
-        string variableLength = EncodingAlgorithm.VariableLengthCodeAlgorithm.Name;
-
-        if (command.Algorithm == variableLength)
-        {
-            return Result.Success(VariableLengthEncodeAlgorithm(command.Data, command.EncodingTableElements));
-        }
-
-        return Result.Success();
     }
 
-    private string VariableLengthEncodeAlgorithm(byte[] data, EncodingTableElements tableElements)
+    public async Task<Result<byte[]>> HandleAsync(DecodeCommand command, CancellationToken cancellationToken = default)
     {
-        return VariableLengthCodeDecodeBuilder
-            .Init()
-            .WithContent(data)
-            .WithTableElements(tableElements)
-            .PrepareContent()
-            .Build();
+        Dictionary<string, byte[]> decodedContentResult = [];
+
+        List<string> fileNames = command.FileEntries.Select(x => x.FileName).ToList();
+
+        (List<EncodingFile> existingFiles, List<EncodingTable> existingTables) = await GetEncodingRelatedDataAsync(fileNames);
+
+        foreach (var fileEntry in command.FileEntries)
+        {
+            EncodingFile? existingFile = existingFiles.FirstOrDefault(x => x.FileName == fileEntry.FileName);
+
+            if (existingFile is not null)
+            {
+                EncodingTable? existingTable = existingTables.FirstOrDefault(x => x.Id == existingFile.EncodingTableId);
+
+                if (existingTable is not null)
+                {
+                    EncodingAlgorithm? algorithm = EncodingAlgorithm.FromValue(existingTable.EncodingAlgorithmId);
+
+                    EncodingLanguage? language = existingTable.EncodingLanguageId.HasValue ? EncodingLanguage.FromValue(existingTable.EncodingLanguageId.Value) 
+                                                                                           : null;
+
+                    var decodedContent = DecodeFile
+                    (
+                        existingTable.EncodedContentBytes,
+                        existingTable.EncodingTableElements,
+                        algorithm,
+                        language
+                    );
+
+                    decodedContentResult.Add(existingFile.FileName, Encoding.UTF8.GetBytes(decodedContent));
+                }
+
+                continue;
+            }
+        }
+
+        return await ZipResult(decodedContentResult);
+    }
+}
+
+internal sealed class DecodeByFileNameCommandHandler : BaseEncoding, ICommandHandler<DecodeByFileNameCommand, Result<byte[]>>
+{
+    public DecodeByFileNameCommandHandler
+    (
+        ArchivEaseContext context,
+        EncodingAnalyzer analyzer
+    ) : base(context, analyzer)
+    {
+    }
+
+    public async Task<Result<byte[]>> HandleAsync(DecodeByFileNameCommand command, CancellationToken cancellationToken = default)
+    {
+        Dictionary<string, byte[]> decodedContentResult = [];
+
+        List<string> fileNames = new List<string>()
+        {
+            command.FileName
+        };
+
+        (List<EncodingFile> existingFiles, List<EncodingTable> existingTables) = await GetEncodingRelatedDataAsync(fileNames);
+
+        EncodingFile? existingFile = existingFiles.FirstOrDefault(x => x.FileName == command.FileName);
+
+        if (existingFile is not null)
+        {
+            EncodingTable? existingTable = existingTables.FirstOrDefault(x => x.Id == existingFile.EncodingTableId);
+
+            if (existingTable is not null)
+            {
+                EncodingAlgorithm? algorithm = EncodingAlgorithm.FromValue(existingTable.EncodingAlgorithmId);
+                EncodingLanguage? language = existingTable.EncodingLanguageId.HasValue ? EncodingLanguage.FromValue(existingTable.EncodingLanguageId.Value)
+                                                                                       : null;
+
+                var decodedContent = DecodeFile
+                (
+                    existingTable.EncodedContentBytes,
+                    existingTable.EncodingTableElements,
+                    algorithm,
+                    language
+                );
+
+                decodedContentResult.Add(existingFile.FileName, Encoding.UTF8.GetBytes(decodedContent));
+            }
+        }
+
+        return await ZipResult(decodedContentResult);
     }
 }

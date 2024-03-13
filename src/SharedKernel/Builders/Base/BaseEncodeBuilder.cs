@@ -2,16 +2,26 @@
 
 namespace SharedKernel.Builders.Base;
 
-public abstract class BaseEncodeBuilder<TEncoder, TContent, TTableElements>
+public abstract class BaseEncodeBuilder<TEncoder, TContent, TTableElements> : IDisposable
     where TTableElements : IEnumerable<object>
 {
+    private bool disposed = false;
+
     protected TContent? Content { get; set; }
 
     protected TTableElements? EncodingTableElements { get; set; }
 
+    protected string Language { get; set; } = string.Empty;
+
     public static TEncoder Init()
         => Activator.CreateInstance<TEncoder>();
 
+    ~BaseEncodeBuilder()
+    {
+        Dispose(true);
+    }
+
+    #region validations
     protected bool IsContentNotNullOrWhiteSpace()
     {
         if (typeof(TContent) == typeof(string))
@@ -25,7 +35,9 @@ public abstract class BaseEncodeBuilder<TEncoder, TContent, TTableElements>
 
     protected bool IsEncodingTableElementsProvided()
         => EncodingTableElements != null && EncodingTableElements.Any();
+    #endregion
 
+    #region chunks logics
     protected BinaryChunks SplitByChunks
     (
        string content,
@@ -83,4 +95,24 @@ public abstract class BaseEncodeBuilder<TEncoder, TContent, TTableElements>
 
         return encodedBytes.ToArray();
     }
+    #endregion
+
+    #region dispose
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    public void Dispose(bool disposing)
+    {
+        if (!disposed && disposing)
+        {
+            Content = default;
+            EncodingTableElements = default;
+
+            disposed = true;
+        }
+    }
+    #endregion
 }

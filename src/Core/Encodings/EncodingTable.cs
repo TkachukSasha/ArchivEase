@@ -8,7 +8,7 @@ public sealed class EncodingTable : Entity<EncodingTableId>
 {
     private EncodingTable(
         Guid id,
-        byte[]? encodedContentBytes,
+        byte[] encodedContentBytes,
         Guid encodingAlgorithmId,
         Guid? encodingLanguageId,
         EncodingTableElements encodingTableElements
@@ -26,7 +26,7 @@ public sealed class EncodingTable : Entity<EncodingTableId>
     {
     }
 
-    public byte[]? EncodedContentBytes { get; set; }
+    public byte[] EncodedContentBytes { get; set; }
 
     public Guid EncodingAlgorithmId { get; }
 
@@ -35,15 +35,14 @@ public sealed class EncodingTable : Entity<EncodingTableId>
     public EncodingTableElements EncodingTableElements { get; }
 
     public static Result<EncodingTable> Init(
-        byte[]? encodedContentBytes,
+        byte[] encodedContentBytes,
         Guid encodingAlgorithmId,
         Guid? encodingLanguageId,
         EncodingTableElements encodingTableElements
     ) =>
         Result.Ensure(
-            (encodedContentBytes, encodingTableElements),
-            (_ => !encodedContentBytes.ArrayOfBytesIsNullOrEmpty(), EncodingTableErrors.EncodingTableEncodedContentMustBeProvide),
-            (_ => encodingTableElements is not null && encodingTableElements.Any(), EncodingTableErrors.EncodingTableElementsMustBeProvideOrNotBeNull)
+            (encodedContentBytes),
+            (_ => !encodedContentBytes.ArrayOfBytesIsNullOrEmpty(), EncodingTableErrors.EncodingTableEncodedContentMustBeProvide)
         )
         .Map(_ => new EncodingTable(new EncodingTableId(), encodedContentBytes, encodingAlgorithmId, encodingLanguageId, encodingTableElements));
 }

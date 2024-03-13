@@ -3,6 +3,7 @@
 public sealed class FileInfoDto
 {
     public string FilePath { get; set; }
+    public string EncodedUnitsOfMeasurement { get; set; }
 
-    public long FileLength { get; set; }
+    public double FileLength { get; set; }
 }
