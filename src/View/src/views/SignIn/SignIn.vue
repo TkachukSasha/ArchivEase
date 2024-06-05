@@ -58,6 +58,8 @@ const handleSubmit  = async () =>{
 
     const token = signInResponse.value.value?.token ?? '';
 
+    const id = signInResponse.value.value?.id ?? '';
+
     Cookies.set('jwt', token);
 
     const authState = {
@@ -66,6 +68,7 @@ const handleSubmit  = async () =>{
     }
 
     window.localStorage.setItem('authState', JSON.stringify(authState));
+    window.localStorage.setItem('id', id);
 
     eventBus.emit('authStateChanged', authState);
 

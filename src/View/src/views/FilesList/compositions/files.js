@@ -5,8 +5,10 @@ import { fileEndpoints } from "@/api/apiEndpoints.js";
 export async function useFiles({ page, results }) {
     const loaded = ref(false);
 
+    const userId = window.localStorage.getItem('id');
+
     const { response: files, request } = useFetch(
-        fileEndpoints.default + `?page=${page}&results=${results}`
+        fileEndpoints.default + `?userId=${userId}&page=${page}&results=${results}`
     );
 
     if (!loaded.value) {

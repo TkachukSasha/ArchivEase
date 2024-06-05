@@ -14,6 +14,7 @@ namespace Core.Commands;
 
 public sealed record EncodeCommand
 (
+   Guid UserId,
    List<FileEntryDto> FileEntries
 ) : ICommand<Result<byte[]>>;
 
@@ -37,6 +38,7 @@ internal sealed class EncodeCommandHandler : BaseEncoding, ICommandHandler<Encod
 
     public async Task<Result<byte[]>> HandleAsync(EncodeCommand command, CancellationToken cancellationToken = default)
     {
+        #region fields
         Dictionary<string, byte[]> encodedContentResult = [];
 
         List<EncodingTable> _encodingTables = [];
@@ -44,6 +46,7 @@ internal sealed class EncodeCommandHandler : BaseEncoding, ICommandHandler<Encod
         List<EncodingFile> _encodingFiles = [];
 
         List<string> fileNames = command.FileEntries.Select(x => x.FileName).ToList();
+        #endregion
 
         (List<EncodingFile> existingFiles, List<EncodingTable> existingTables) = await GetEncodingRelatedDataAsync(fileNames);
 
@@ -69,7 +72,18 @@ internal sealed class EncodeCommandHandler : BaseEncoding, ICommandHandler<Encod
 
             lock (_lock)
             {
-                SetEntities(fileEntry, fileInfo.Value, encodedData, encodingTableElements, _encodingTables, _encodingFiles, languageId, algorithmId);
+                SetEntities
+                (
+                    fileEntry,
+                    fileInfo.Value,
+                    encodedData,
+                    encodingTableElements,
+                    _encodingTables,
+                    _encodingFiles,
+                    languageId,
+                    algorithmId,
+                    command.UserId
+                );
 
                 encodedContentResult.Add(fileEntry.FileName, encodedData);
             }
@@ -103,7 +117,8 @@ internal sealed class EncodeCommandHandler : BaseEncoding, ICommandHandler<Encod
         List<EncodingTable> encodingTables,
         List<EncodingFile> encodingFiles,
         Guid languageId,
-        Guid algorithmId
+        Guid algorithmId,
+        Guid userId
     )
     {
         (double fileLength, string unitsOfMeasurement) = FileExtensions.GetFileSizeUnitsOfMeasurement(fileEntry.Length);
@@ -125,7 +140,8 @@ internal sealed class EncodeCommandHandler : BaseEncoding, ICommandHandler<Encod
             unitsOfMeasurement,
             fileEntry.ContentType,
             fileInfo.FileLength,
-            fileLength
+            fileLength,
+            userId
         ).Value;
 
         encodingTables.Add(encodingTable);

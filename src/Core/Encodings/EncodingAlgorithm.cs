@@ -7,6 +7,7 @@ public class EncodingAlgorithm : Enumeration<EncodingAlgorithm>
     public static readonly EncodingAlgorithm VariableLengthCodeAlgorithm = new EncodingVariableLengthCodeAlgorithm();
     public static readonly EncodingAlgorithm ShannonFanoAlgorithm = new EncodingShannonFanoAlgorithm();
     public static readonly EncodingAlgorithm HuffmanAlgorithm = new EncodingHuffmanAlgorithm();
+    public static readonly EncodingAlgorithm GzipAlgorithm = new GZipAlgorithm();
 
     public EncodingAlgorithm
     (
@@ -32,5 +33,11 @@ public class EncodingAlgorithm : Enumeration<EncodingAlgorithm>
     {
         public EncodingHuffmanAlgorithm()
             : base(Guid.NewGuid(), "huffman") { }
+    }
+
+    private sealed class GZipAlgorithm : EncodingAlgorithm
+    {
+        public GZipAlgorithm()
+           : base(Guid.NewGuid(), "gzip") { }
     }
 }

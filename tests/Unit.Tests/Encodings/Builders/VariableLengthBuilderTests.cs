@@ -93,6 +93,7 @@ public class VariableLengthBuilderTests
             .Init()
             .WithContent(message)
             .WithTableElements(tableElements)
+            .WithLanguage(languageName)
             .PrepareContent()
             .Build();
 

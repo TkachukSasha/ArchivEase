@@ -7,6 +7,7 @@ using SharedKernel.Dispatchers;
 using Core.Commands;
 using Core.Dtos;
 using SharedKernel.Files;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Api.Controllers;
 
@@ -27,10 +28,11 @@ public class FilesController : BaseController
 
     [Authorization(Permissions.EncodeFiles | Permissions.DecodeFiles)]
     [HttpPost("encode")]
-    public async Task<IActionResult> EncodeFilesAsync([FromForm] List<IFormFile> files, CancellationToken cancellationToken)
+    public async Task<IActionResult> EncodeFilesAsync([FromForm] List<IFormFile> files, [FromQuery] Guid userId, CancellationToken cancellationToken)
     {
         var command = new EncodeCommand
         (
+            userId,
             files.Select(x => new FileEntryDto(x.FileName, x.ContentType, x.Length, x.OpenReadStream())).ToList()
         );
 
@@ -41,7 +43,7 @@ public class FilesController : BaseController
 
     [Authorization(Permissions.EncodeFiles | Permissions.DecodeFiles)]
     [HttpPost("decode")]
-    public async Task<IActionResult> DecodeAsync([FromForm] List<IFormFile> files, CancellationToken cancellationToken)
+    public async Task<IActionResult> DecodeAsync([FromForm] List<IFormFile> files, [FromQuery] Guid userId, CancellationToken cancellationToken)
     {
         var command = new DecodeCommand
         (

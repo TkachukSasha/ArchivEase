@@ -21,34 +21,6 @@ public sealed class EncodingAnalyzer
          { 3, EncodingAlgorithm.HuffmanAlgorithm.Name }
     };
 
-    private readonly Dictionary<uint, string> _algorithmLanguageMappingValues = new Dictionary<uint, string>()
-    {
-         { 1, EncodingLanguage.Ukrainian.Name },
-         { 2, EncodingLanguage.English.Name }
-    };
-
-    public EncodingAnalyzer()
-    {
-        _trainingData = LoadTrainingDataFromCsv("D:\\Projects\\ArchivEase\\src\\encoding_trainings_202403091535.csv");
-        _mlContext = new MLContext();
-
-        var trainingDataView = _mlContext.Data.LoadFromEnumerable(_trainingData.Select(x => new EncodingData { Content = x.Content, Algorithm = x.Algorithm, Language = x.Language }));
-
-        var dataProcessPipeline = _mlContext.Transforms.Conversion.MapValueToKey("Label", nameof(EncodingData.Algorithm))
-              .Append(_mlContext.Transforms.Conversion.MapValueToKey("LanguageLabel", nameof(EncodingData.Language)))
-              .Append(_mlContext.Transforms.Text.FeaturizeText("Features", nameof(EncodingData.Content)));
-
-        var trainer = _mlContext.MulticlassClassification.Trainers.SdcaMaximumEntropy();
-
-        var trainingPipeline = dataProcessPipeline.Append(trainer)
-            .Append(_mlContext.Transforms.Conversion.MapKeyToValue("PredictedAlgorithm", "PredictedLabel"))
-            .Append(_mlContext.Transforms.Conversion.MapKeyToValue("PredictedLanguage", "LanguageLabel"));
-
-        var trainedModel = trainingPipeline.Fit(trainingDataView);
-
-        _predictionEngine = _mlContext.Model.CreatePredictionEngine<EncodingData, EncodingPrediction>(trainedModel);
-    }
-
     private List<EncodingTrainingPredict> LoadTrainingDataFromCsv(string filePath)
     {
         var trainingData = new List<EncodingTrainingPredict>();
@@ -70,6 +42,29 @@ public sealed class EncodingAnalyzer
         }
 
         return trainingData;
+    }
+
+    public EncodingAnalyzer()
+    {
+        _trainingData = LoadTrainingDataFromCsv("D:\\Projects\\ArchivEase\\src\\encoding_trainings_202403091535.csv");
+        _mlContext = new MLContext();
+
+        var trainingDataView = _mlContext.Data.LoadFromEnumerable(_trainingData
+            .Select(x => new EncodingData { Content = x.Content, Algorithm = x.Algorithm, Language = x.Language }));
+
+        var dataProcessPipeline = _mlContext.Transforms.Conversion.MapValueToKey("Label", nameof(EncodingData.Algorithm))
+              .Append(_mlContext.Transforms.Conversion.MapValueToKey("LanguageLabel", nameof(EncodingData.Language)))
+              .Append(_mlContext.Transforms.Text.FeaturizeText("Features", nameof(EncodingData.Content)));
+
+        var trainer = _mlContext.MulticlassClassification.Trainers.SdcaMaximumEntropy();
+
+        var trainingPipeline = dataProcessPipeline.Append(trainer)
+            .Append(_mlContext.Transforms.Conversion.MapKeyToValue("PredictedAlgorithm", "PredictedLabel"))
+            .Append(_mlContext.Transforms.Conversion.MapKeyToValue("PredictedLanguage", "LanguageLabel"));
+
+        var trainedModel = trainingPipeline.Fit(trainingDataView);
+
+        _predictionEngine = _mlContext.Model.CreatePredictionEngine<EncodingData, EncodingPrediction>(trainedModel);
     }
 
     public (string Algorithm, string Language) PredictAlgorithmAndLanguage(string fileContent)

@@ -75,11 +75,14 @@ public sealed class HuffmanEncodeBuilder
 
     private void FillEncodingElements()
     {
-        var nodes = _symbolFrequency.Select(pair => new HuffmanNode { Symbol = pair.Key, Frequency = pair.Value }).ToList();
+        var nodes = _symbolFrequency
+            .Select(pair => new HuffmanNode { Symbol = pair.Key, Frequency = pair.Value })
+            .ToList();
 
         while (nodes.Count > 1)
         {
-            nodes = nodes.OrderBy(node => node.Frequency).ToList();
+            nodes = nodes
+                .OrderBy(node => node.Frequency).ToList();
 
             var left = nodes[0];
             var right = nodes[1];

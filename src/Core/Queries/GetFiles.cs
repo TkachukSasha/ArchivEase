@@ -9,6 +9,7 @@ namespace Core.Queries;
 
 public class GetFilesQuery : PagedQuery<FileDto>
 {
+    public Guid UserId { get; set; }
 }
 
 internal sealed class GetFilesQueryHandler : IQueryHandler<GetFilesQuery, Paged<FileDto>>
@@ -25,6 +26,7 @@ internal sealed class GetFilesQueryHandler : IQueryHandler<GetFilesQuery, Paged<
         IQueryable<FileDto> files = _context
                       .EncodingFiles
                       .AsNoTracking()
+                      .Where(x => x.UserId == query.UserId)
                       .Select
                       (
                         x => 

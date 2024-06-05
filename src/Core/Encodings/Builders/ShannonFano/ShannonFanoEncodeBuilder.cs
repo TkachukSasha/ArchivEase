@@ -105,26 +105,21 @@ public sealed class ShannonFanoEncodeBuilder
         int totalFrequency = codes.Sum(code => code.Frequency);
         int leftFrequency = 0;
 
-        // Find the best split position
         int bestPosition = FindBestSplitPosition(codes, totalFrequency, ref leftFrequency);
 
-        // Assign codes based on the split position
         for (int i = 0; i < codes.Count; i++)
         {
-            // Increase code size for each symbol
             codes[i].Size++;
 
-            // Assign the bit based on the split position
             if (i < bestPosition)
-                codes[i].Bits <<= 1; // Move the bit to the left
+                codes[i].Bits <<= 1; 
             else
             {
                 codes[i].Bits <<= 1;
-                codes[i].Bits |= 1; // Set the least significant bit to 1
+                codes[i].Bits |= 1; 
             }
         }
 
-        // Recursively assign codes to the left and right partitions
         AssignCodes(codes.GetRange(0, bestPosition));
         AssignCodes(codes.GetRange(bestPosition, codes.Count - bestPosition));
     }

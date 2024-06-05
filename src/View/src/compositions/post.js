@@ -44,7 +44,7 @@ export function useUploadFiles(url, options) {
         }
 
         const config = {
-            method: 'POST',
+            method: 'POST',x
             body: formData,
             ...options,
             headers: {
@@ -53,7 +53,7 @@ export function useUploadFiles(url, options) {
             },
         };
 
-        const res = await fetch(url, config);
+        const res = await fetch(url + `?userId=${window.localStorage.getItem('id')}`, config);
         response.value = res.blob();
     }
 

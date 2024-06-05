@@ -7,6 +7,7 @@ using SharedKernel.Errors;
 using System.IO.Compression;
 using Core.Encodings.Builders.VariableLengthCode;
 using Core.Encodings.Builders.Huffman;
+using Core.Helper;
 
 namespace Core.Commands.Base;
 
@@ -124,13 +125,21 @@ internal abstract class BaseEncoding
 
             (string algorithmName, string languageName) = _analyzer.PredictAlgorithmAndLanguage(content);
 
-            return algorithmName switch
+            try
             {
-                "variable_length_code" => VariableLengthEncode(content, languageName),
-                "shannon_fano" => ShannonFanoEncode(content, languageName),
-                "huffman" => HuffmanEncode(content, languageName),
-                _ => ShannonFanoEncode(content, languageName)
-            };
+                return algorithmName switch
+                {
+                    "variable_length_code" => VariableLengthEncode(content, languageName),
+                    "shannon_fano" => ShannonFanoEncode(content, languageName),
+                    "huffman" => HuffmanEncode(content, languageName),
+                    _ => ShannonFanoEncode(content, languageName)
+                };
+            }
+            catch
+            {
+                byte[] bytes = JsonResolverCoding.Compress(content);
+                return (bytes, null, EncodingLanguage.FromName(EncodingLanguage.English.Name).Value, EncodingAlgorithm.FromName(EncodingAlgorithm.GzipAlgorithm.Name).Value);
+            }
         }
 
         (byte[], EncodingTableElements, Guid, Guid) VariableLengthEncode(string content, string languageName)
@@ -189,7 +198,8 @@ internal abstract class BaseEncoding
             "variable_length_code" => VariableLengthCodeDecode(),
             "shannon_fano" => ShannonFanoDecode(),
             "huffman" => HuffmanDecode(),
-            _ => string.Empty
+            "gzip" => JsonResolverCoding.Decompress<string>(encodedBytes),
+            _ => JsonResolverCoding.Decompress<string>(encodedBytes)
         };
 
         string VariableLengthCodeDecode()
@@ -254,6 +264,27 @@ internal abstract class BaseEncoding
             var zipBytes = zipMemoryStream.ToArray();
 
             return Result.Success(zipBytes);
+        }
+    }
+
+    protected async Task<Result<byte[]>> ZipResultForGzip(Dictionary<string, byte[]> encodedContent)
+    {
+        using (var zipMemoryStream = new MemoryStream())
+        {
+            using (var zipArchive = new ZipArchive(zipMemoryStream, ZipArchiveMode.Create, true))
+            {
+                foreach (var (key, value) in encodedContent)
+                {
+                    var entry = zipArchive.CreateEntry(key);
+
+                    using (var entryStream = entry.Open())
+                    {
+                        await entryStream.WriteAsync(value, 0, value.Length);
+                    }
+                }
+            }
+
+            return Result.Success(zipMemoryStream.ToArray());
         }
     }
 }

@@ -63,6 +63,9 @@ internal sealed class EncodingConfigurations :
         builder.Property(x => x.DefaultSize)
             .IsRequired();
 
+        builder.Property(x => x.UserId)
+            .IsRequired();
+
         builder.Property(x => x.EncodingTableId)
             .HasColumnName("EncodingTableId")
             .IsRequired();
